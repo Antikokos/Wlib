@@ -1,6 +1,11 @@
+@font-face {
+    font-family: 'Rostov';
+    src: url("{% static '/books/fonts/Rostov.ttf' %}") format('truetype');
+}
+
 /* Общие стили */
-body {
-    font-family: Arial, sans-serif;
+body { 
+    font-family: Rostov, sans-serif;
     background-color: #1d1f21;
     color: #f5f5f5;
     margin: 0;
@@ -8,6 +13,9 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+}
+.genre-title{
+    font-size: 50px;
 }
 
 h1, h2, h3 {
@@ -18,6 +26,7 @@ h1, h2, h3 {
     width: 90%;
     margin: auto;
     flex: 1;
+    margin-top: 40px;
 }
 
 /* Навигация */
@@ -95,11 +104,9 @@ nav a:hover {
 }
 
 /* Контейнер книг */
-.genre-container {
-    margin-top: 40px;
-}
 
-.book-container {
+
+/* .book-container {
     display: flex;
     gap: 20px;
     padding-bottom: 20px;
@@ -146,11 +153,103 @@ nav a:hover {
     margin: 5px 0;
 }
 
-/* Убираем все ползунки прокручивания (горизонтальные и вертикальные) */
-::-webkit-scrollbar {
-    display: none;
+*/
+
+.swiper {
+    width: 100%;
+    height: 100%;
+    margin-bottom: 20px;
 }
 
-.scrollbar {
-    display: none;
+/* Стили для обертки слайдов */
+
+
+.swiper-wrapper {
+    display: flex;
+    gap: 20px;
+    padding-bottom: 20px;
+    /* justify-content: center; */
+    /* width: 100%; */
+    /* position: relative; */
+    /* flex-wrap: nowrap; */
+    /* transition: margin 0.3s ease; */
+}
+
+/* Стили для каждого слайда */
+.swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #b50a9e;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для карточки книги */
+.book-card {
+    background-color: #333;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+    width: 100%;
+    height: 300px;
+    position: relative;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+}
+.book-card:hover {
+    transform: translateY(-10px);
+}
+
+/* Стили для изображения книги */
+.book-image {
+    width: 150px; /* Ширина изображения */
+    height: 80%; /* Высота изображения */
+    background-size: cover; /* Чтобы изображение заполняло блок */
+    background-position: center; /* Центрирование изображения */
+    background-repeat: no-repeat;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    align-items: center;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Стили для информации о книге */
+.book-info {
+    margin-top: 10px;
+}
+
+.book-info h3 {
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+/* Стили для пагинации Swiper */
+.swiper-pagination {
+    position: relative;
+    margin-top: 10px;
+}
+
+/* Стили для кнопок навигации Swiper */
+.swiper-button-next,
+.swiper-button-prev {
+    color: #333;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+    font-size: 20px;
 }

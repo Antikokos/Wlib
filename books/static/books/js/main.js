@@ -2,31 +2,48 @@ const genres = ['fantasy', 'detective', 'manga', 'romance'];
 
 // Функция для получения случайных книг
 function fetchRandomBooks(genre, containerId) {
-    const url = `https://www.googleapis.com/books/v1/volumes?q=subject:${genre}&maxResults=10`; // Увеличено до 10
+    const url = `https://www.googleapis.com/books/v1/volumes?q=subject:${genre}&maxResults=10`;
 
     fetch(url)
         .then(response => response.json())
         .then(data => {
             const container = document.getElementById(containerId);
-            container.innerHTML = ''; // Очистка контейнера перед загрузкой новых книг
+            const swiperWrapper = container.querySelector('.swiper-wrapper');
+            swiperWrapper.innerHTML = ''; // Очистка контейнера перед загрузкой новых книг
 
             // Генерация случайных книг из полученных данных
-            const randomBooks = getRandomItems(data.items, 10); // Теперь выбираем 10 книг
+            const randomBooks = getRandomItems(data.items, 10); // Выбираем 10 книг
             randomBooks.forEach(item => {
                 const title = item.volumeInfo.title || 'Без названия';
                 const authors = item.volumeInfo.authors ? item.volumeInfo.authors.join(', ') : 'Неизвестные авторы';
                 const imageUrl = item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/200x240/444';
 
-                const bookCard = document.createElement('div');
-                bookCard.classList.add('book-card');
-                bookCard.innerHTML = `
-                    <div class="book-image" style="background-image: url('${imageUrl}');"></div>
-                    <div class="book-info">
-                        <h3>${title}</h3>
-                        <p>Автор(ы): ${authors}</p>
+                const slide = document.createElement('div');
+                slide.classList.add('swiper-slide');
+                slide.innerHTML = `
+                    <div class="book-card">
+                        <div class="book-image" style="background-image: url('${imageUrl}');"></div>
+                        <div class="book-info">
+                            <h3>${title}</h3>
+                            <p>Автор: ${authors}</p>
+                        </div>
                     </div>
                 `;
-                container.appendChild(bookCard);
+                swiperWrapper.appendChild(slide);
+            });
+
+            // Инициализация Swiper после добавления слайдов
+            new Swiper(`#${containerId}`, {
+                slidesPerView: 5, // Количество видимых слайдов
+                spaceBetween: 10, // Расстояние между слайдами
+                // pagination: {
+                //     el: '.swiper-pagination',
+                //     clickable: true,
+                // },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
             });
         })
         .catch(error => console.error('Ошибка при загрузке книг:', error));
@@ -52,16 +69,6 @@ function getRandomItems(arr, count) {
 genres.forEach(genre => {
     fetchRandomBooks(genre, genre);
 });
-
-// Горизонтальная прокрутка с помощью колеса мыши
-genres.forEach(genre => {
-    const container = document.getElementById(genre);
-    container.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        container.scrollLeft += e.deltaY;
-    });
-});
-
 
 
 function sortBooks() {

@@ -5,15 +5,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Название сайта</title>
-    <link rel="stylesheet" href="../../static/books/css/home.css">
+    <title>Wlib</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="{% static 'books/css/home.css' %}">
+    <link rel="icon" href="{% static 'books/img/Wlogo.svg' %}">
 </head>
 <body>
 
     <!-- Навигация -->
     <nav>
         <div style="display: flex; align-items: center;">
-            <img class="logo" src=" {% static 'books/img/logo.png' %}" alt="дабл ю" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
+            <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
         </div>
         <div class="search-container">
             <form action="{% url 'search' %}" method="get">
@@ -27,36 +29,37 @@
         </div>
     </nav>
 
-    <!-- Секции жанров книг -->
+
     <div class="container">
-        <!-- Жанр 1 -->
-        <div class="genre-container">
-            <h2 class="genre-title">Жанр: Фэнтези</h2>
-            <div class="book-container" id="fantasy"></div>
+        <!-- Контейнеры для слайдеров по жанрам -->
+        <div id="fantasy" class="swiper mySwiper">
+            <h2 class="genre-title">Фэнтези</h2>
+            <div class="swiper-wrapper"></div>
+            <div class="swiper-pagination"></div>
         </div>
 
-        <!-- Жанр 2 -->
-        <div class="genre-container">
-            <h2 class="genre-title">Жанр: Детективы</h2>
-            <div class="book-container" id="detective"></div>
+        <div id="detective" class="swiper mySwiper">
+            <h2 class="genre-title">Детективы</h2>
+            <div class="swiper-wrapper"></div>
+            <div class="swiper-pagination"></div>
         </div>
 
-        <!-- Жанр 3 -->
-        <div class="genre-container">
-            <h2 class="genre-title">Жанр: Манга</h2>
-            <div class="book-container" id="manga"></div>
+        <div id="manga" class="swiper mySwiper">
+            <h2 class="genre-title">Манга</h2>
+            <div class="swiper-wrapper"></div>
+            <div class="swiper-pagination"></div>
         </div>
 
-        <!-- Жанр 4 -->
-        <div class="genre-container">
-            <h2 class="genre-title">Жанр: Роман</h2>
-            <div class="book-container" id="romance"></div>
+        <div id="romance" class="swiper mySwiper">
+            <h2 class="genre-title">Романы</h2>
+            <div class="swiper-wrapper"></div>
+            <div class="swiper-pagination"></div>
         </div>
-
     </div>
 
+
    
-        
-    <script src="../../static/books/js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="{% static 'books/js/main.js' %}"></script>
 </body>
 </html>
