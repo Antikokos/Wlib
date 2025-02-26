@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -168,7 +169,7 @@
     <!-- Навигация -->
     <nav>
         <div style="display: flex; align-items: center;">
-            <img class="logo" src="лого.jpg" alt="Logo" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
+            <img class="logo" src='{% static "books/img/logo.png" %}' alt="Logo" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
         </div>
         <div class="search-container">
             <form action="{% url 'search' %}" method="get">
