@@ -1,3 +1,6 @@
-venv
-mybooksite/__pycache__
-books/__pycache__
+.*
+.venv
+venv/
+/venv
+/venv/
+**/__pycache__
