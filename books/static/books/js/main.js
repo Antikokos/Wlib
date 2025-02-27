@@ -36,10 +36,10 @@ function fetchRandomBooks(genre, containerId) {
             new Swiper(`#${containerId}`, {
                 slidesPerView: 5, // Количество видимых слайдов
                 spaceBetween: 10, // Расстояние между слайдами
-                // pagination: {
-                //     el: '.swiper-pagination',
-                //     clickable: true,
-                // },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
                 navigation: {
                     nextEl: '.swiper-button-next',
                     prevEl: '.swiper-button-prev',

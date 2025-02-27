@@ -7,12 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поиск книги</title>
     <link rel="stylesheet" href="../../static/books/css/search.css">
+    <link rel="icon" href="{% static 'books/img/Wlogo.svg' %}">
 </head>
 <body>
 
     <nav>
         <div style="display: flex; align-items: center;">
-            <img class="logo" src="{% static 'books/img/logo.png' %}" alt="Logo" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
+            <a href="{% url 'home' %}">
+                <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
+            </a>
         </div>
         <div class="search-container">
             <form action="{% url 'search' %}" method="get">
