@@ -4,172 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Название сайта</title>
-    <style>
-        /* Общие стили */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #1d1f21;
-            color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        h1, h2, h3 {
-            color: #C71585;
-        }
-
-        .container {
-            width: 90%;
-            margin: auto;
-            flex: 1;
-        }
-
-        /* Навигация */
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background-color: #2c2f33;
-            border-bottom: 2px solid #C71585;
-        }
-
-        nav a {
-            color: #f5f5f5;
-            text-decoration: none;
-            padding: 10px 15px;
-            font-size: 28px;
-        }
-
-        nav a:hover {
-            background-color: #C71585;
-            border-radius: 5px;
-        }
-
-        .search-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            width: 100%;
-            margin-left: -50px;
-        }
-
-        .search-bar {
-            padding: 10px;
-            border-radius: 25px;
-            border: 1px solid #C71585;
-            background-color: #2c2f33;
-            color: #f5f5f5;
-            width: 500px;
-        }
-
-        .search-bar::placeholder {
-            color: #f5f5f5;
-        }
-
-        .search-button {
-            background-color: #C71585;
-            border: none;
-            padding: 10px;
-            border-radius: 25px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        .search-button:hover {
-            background-color: #a3126b;
-        }
-
-        /* Контейнер иконки пользователя */
-        .user-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-icon {
-            width: 40px;
-            height: 40px;
-            background-image: url('https://via.placeholder.com/40');
-            background-size: cover;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid #C71585; /* Добавим рамку вокруг иконки */
-        }
-
-        /* Контейнер книг */
-        .genre-container {
-            margin-top: 40px;
-        }
-
-        .book-container {
-            display: flex;
-            gap: 20px;
-            padding-bottom: 20px;
-            justify-content: center;
-            overflow-x: auto;
-            width: 100%;
-            position: relative;
-            flex-wrap: nowrap;
-            transition: margin 0.3s ease;
-            scroll-behavior: smooth;
-        }
-
-        .book-card {
-            background-color: #333;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease;
-            width: 200px;
-            height: 300px;
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .book-card:hover {
-            transform: translateY(-10px);
-        }
-
-        .book-image {
-            width: 100%;
-            height: 240px;
-            object-fit: cover;
-            background-color: #444;
-            border-radius: 10px;
-        }
-
-        .book-info {
-            margin-top: 10px;
-        }
-
-        .book-info h3 {
-            font-size: 16px;
-            margin: 5px 0;
-        }
-
-        /* Убираем все ползунки прокручивания (горизонтальные и вертикальные) */
-        ::-webkit-scrollbar {
-            display: none;
-        }
-
-        .scrollbar {
-            display: none;
-        }
-    </style>
+    <title>Wlib</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="{% static 'books/css/home.css' %}">
+    <link rel="icon" href="{% static 'books/img/Wlogo.svg' %}">
 </head>
 <body>
 
     <!-- Навигация -->
     <nav>
         <div style="display: flex; align-items: center;">
-            <img class="logo" src='{% static "books/img/logo.png" %}' alt="Logo" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
+            <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
         </div>
         <div class="search-container">
             <form action="{% url 'search' %}" method="get">
@@ -183,99 +28,37 @@
         </div>
     </nav>
 
-    <!-- Секции жанров книг -->
+
     <div class="container">
-        <!-- Жанр 1 -->
-        <div class="genre-container">
-            <h2 class="genre-title">Жанр: Фэнтези</h2>
-            <div class="book-container" id="fantasy"></div>
+        <!-- Контейнеры для слайдеров по жанрам -->
+        <div id="fantasy" class="swiper mySwiper">
+            <h2 class="genre-title">Фэнтези</h2>
+            <div class="swiper-wrapper"></div>
+            <div class="swiper-pagination"></div>
         </div>
 
-        <!-- Жанр 2 -->
-        <div class="genre-container">
-            <h2 class="genre-title">Жанр: Детективы</h2>
-            <div class="book-container" id="detective"></div>
+        <div id="detective" class="swiper mySwiper">
+            <h2 class="genre-title">Детективы</h2>
+            <div class="swiper-wrapper"></div>
+            <div class="swiper-pagination"></div>
         </div>
 
-        <!-- Жанр 3 -->
-        <div class="genre-container">
-            <h2 class="genre-title">Жанр: Манга</h2>
-            <div class="book-container" id="manga"></div>
+        <div id="manga" class="swiper mySwiper">
+            <h2 class="genre-title">Манга</h2>
+            <div class="swiper-wrapper"></div>
+            <div class="swiper-pagination"></div>
         </div>
 
-        <!-- Жанр 4 -->
-        <div class="genre-container">
-            <h2 class="genre-title">Жанр: Роман</h2>
-            <div class="book-container" id="romance"></div>
+        <div id="romance" class="swiper mySwiper">
+            <h2 class="genre-title">Романы</h2>
+            <div class="swiper-wrapper"></div>
+            <div class="swiper-pagination"></div>
         </div>
-
     </div>
 
-    <script>
-        const genres = ['fantasy', 'detective', 'manga', 'romance'];
 
-        // Функция для получения случайных книг
-        function fetchRandomBooks(genre, containerId) {
-            const url = `https://www.googleapis.com/books/v1/volumes?q=subject:${genre}&maxResults=10`; // Увеличено до 10
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById(containerId);
-                    container.innerHTML = ''; // Очистка контейнера перед загрузкой новых книг
-
-                    // Генерация случайных книг из полученных данных
-                    const randomBooks = getRandomItems(data.items, 10); // Теперь выбираем 10 книг
-                    randomBooks.forEach(item => {
-                        const title = item.volumeInfo.title || 'Без названия';
-                        const authors = item.volumeInfo.authors ? item.volumeInfo.authors.join(', ') : 'Неизвестные авторы';
-                        const imageUrl = item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/200x240/444';
-
-                        const bookCard = document.createElement('div');
-                        bookCard.classList.add('book-card');
-                        bookCard.innerHTML = `
-                            <div class="book-image" style="background-image: url('${imageUrl}');"></div>
-                            <div class="book-info">
-                                <h3>${title}</h3>
-                                <p>Автор(ы): ${authors}</p>
-                            </div>
-                        `;
-                        container.appendChild(bookCard);
-                    });
-                })
-                .catch(error => console.error('Ошибка при загрузке книг:', error));
-        }
-
-        // Функция для получения случайных элементов
-        function getRandomItems(arr, count) {
-            const shuffled = arr.slice(0); // Копируем массив
-            let i = arr.length, temp, randomIndex;
-
-            while (i !== 0) {
-                randomIndex = Math.floor(Math.random() * i);
-                i--;
-                temp = shuffled[i];
-                shuffled[i] = shuffled[randomIndex];
-                shuffled[randomIndex] = temp;
-            }
-
-            return shuffled.slice(0, count);
-        }
-
-        // Загружаем книги для каждого жанра
-        genres.forEach(genre => {
-            fetchRandomBooks(genre, genre);
-        });
-
-        // Горизонтальная прокрутка с помощью колеса мыши
-        genres.forEach(genre => {
-            const container = document.getElementById(genre);
-            container.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                container.scrollLeft += e.deltaY;
-            });
-        });
-    </script>
-
+   
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="{% static 'books/js/main.js' %}"></script>
 </body>
 </html>
