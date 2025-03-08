@@ -6,13 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поиск книги</title>
-    <link rel="stylesheet" href="../../static/books/css/search.css">
+    <link rel="stylesheet" href="{% static 'books/css/search.css' %}">
 </head>
 <body>
 
     <nav>
         <div style="display: flex; align-items: center;">
-            <img class="logo" src="{% static 'books/img/logo.png' %}" alt="Logo" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
+            <img class="logo" src="{% static 'books/img/logo.png' %}" alt="Logo" style="width: 200px;">
         </div>
         <div class="search-container">
             <form action="{% url 'search' %}" method="get">
@@ -21,7 +21,6 @@
             </form>
         </div>
         <div class="user-container">
-            <!-- Иконка пользователя с пустым фоном -->
             <div class="user-icon"></div>
         </div>
     </nav>
@@ -38,23 +37,23 @@
         <h2 id="result-title">Результаты поиска для "{{ query }}"</h2>
         <div class="book-container" id="book-container">
             {% for book in books %}
-            <div class="book-card">
-                <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
-                <div class="book-info">
-                    <h3>{{ book.title }}</h3>
-                    <p>Автор(ы): {{ book.authors }}</p>
-                    <p>Издатель: {{ book.publisher }}</p>
-                    <p>Кол-во страниц: {{ book.page_count }}</p>
-                    <p>Год выхода: {{ book.published_date }}</p>
+            <a href="{% url 'book_detail' book.id %}">
+                <div class="book-card">
+                    <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                    <div class="book-info">
+                        <h3>{{ book.title }}</h3>
+                        <p>Автор(ы): {{ book.authors }}</p>
+                        <p>Издатель: {{ book.publisher }}</p>
+                        <p>Кол-во страниц: {{ book.page_count }}</p>
+                        <p>Год выхода: {{ book.published_date }}</p>
+                    </div>
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
     </div>
 
-
-
-    <script src="../../static/books/js/main.js"></script>
+    <script src="{% static 'books/js/main.js' %}"></script>
 
 </body>
 </html>
