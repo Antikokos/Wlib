@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Страница книги</title>
+    <link rel="stylesheet" href="../../static/books/css/book_detail.css">
+    <link rel="icon" href="{% static 'books/img/Wlogo.svg' %}">
+</head>
+<body>
+   <nav>
+        <div style="display: flex; align-items: center;">
+           <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;">
+        </div>
+        <div class="search-container">
+            <input class="search-bar" type="text" placeholder="Поиск книг...">
+            <button class="search-button">Поиск</button>
+        </div>
+        <div class="user-container">
+            <div class="user-icon"></div>
+        </div>
+    </nav>
+
+    <!-- Контейнер книги -->
+    <!-- books/templates/books/book_detail.html -->
+<div class="container">
+    <div class="book-container">
+        <div class="book-cover-container">
+            <img id="book-cover" src="{{ book.thumbnail }}" alt="Обложка книги">
+        </div>
+        <div class="book-details">
+            <p id="book-title">{{ book.title }}</p>
+            <p id="book-author">Автор: {{ book.authors }}</p>
+            <p id="book-description">{{ book.description }}</p>
+            <p id="book-publisher">Издательство: {{ book.publisher }}</p>
+            <p id="book-year">Год: {{ book.published_date }}</p>
+            <p id="book-pages">Страниц: {{ book.page_count }}</p>
+
+            <!-- Прогресс-бар -->
+            <div class="progress-bar-container">
+                <p>Прочитано: <span id="book-progress-text">0%</span></p>
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Кнопка "Добавить" и выпадающее меню -->
+            <div class="add-button-container">
+                <button class="add-button" onclick="toggleStatusButtons()">Добавить</button>
+                <div class="status-buttons" id="status-buttons">
+                    <button class="reading-button" onclick="updateStatus('reading')">Читаю</button>
+                    <button class="want-to-read-button" onclick="updateStatus('want-to-read')">В планах</button>
+                    <button class="read-button" onclick="updateStatus('read')">Прочитано</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="../../static/books/js/book_detail.js"></script>
+</body>
+</html>
