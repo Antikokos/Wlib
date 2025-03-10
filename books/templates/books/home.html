@@ -1,84 +1,64 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wlib</title>
+
+{% block extra_head %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <link rel="stylesheet" href="{% static 'books/css/home.css' %}">
-    <link rel="icon" href="{% static 'books/img/Wlogo.svg' %}">
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'books/css/books-sliders.css' %}">
+{% endblock %}
 
-    <!-- Навигация -->
-    <nav>
-        <div style="display: flex; align-items: center;">
-            <a href="{% url 'home' %}">
-                <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
-            </a>
-            </div>
-        <div class="search-container">
-            <form action="{% url 'search' %}" method="get">
-                <input class="search-bar" type="text" name="q" placeholder="Поиск книг...">
-                <button class="search-button" type="submit">Поиск</button>
-            </form>
+
+{% block content %}
+<div class="container">
+
+    <div class="sliders">
+        <div class="sliders-navigation">
+            <button class="sliders-btn swiper-button-prev">
+                <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 11L0.999995 6L6 0.999998" stroke="white"/>
+                    </svg>
+            </button>
         </div>
-        <div class="user-container">
-             <a href="{% url 'login' %}"><div class="user-icon"></div></a>
+        <div class="sliders-navigation">
+            <button class="sliders-btn swiper-button-next">
+                <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 11L6.00001 6L1 0.999997" stroke="white"/>
+                    </svg>
+                    
+            </button>
         </div>
-    </nav>
+    </div>
+    
 
-
-    <div class="container">
-
-        <div class="sliders">
-            <div class="sliders-navigation">
-                <button class="sliders-btn swiper-button-prev">
-                    <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 11L0.999995 6L6 0.999998" stroke="white"/>
-                        </svg>
-                </button>
-            <div class="sliders-navigation">
-                <button class="sliders-btn swiper-button-next">
-                    <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 11L6.00001 6L1 0.999997" stroke="white"/>
-                        </svg>
-                        
-                </button>
-            </div>
-        </div>
-        
-
-        <!-- Контейнеры для слайдеров по жанрам -->
-        <div id="fantasy" class="swiper mySwiper">
-            <h2 class="genre-title">Фэнтези</h2>
-            <div class="swiper-wrapper"></div>
-            <div class="swiper-pagination"></div>
-        </div>
-
-        <div id="detective" class="swiper mySwiper">
-            <h2 class="genre-title">Детективы</h2>
-            <div class="swiper-wrapper"></div>
-            <div class="swiper-pagination"></div>
-        </div>
-
-        <div id="manga" class="swiper mySwiper">
-            <h2 class="genre-title">Манга</h2>
-            <div class="swiper-wrapper"></div>
-            <div class="swiper-pagination"></div>
-        </div>
-
-        <div id="romance" class="swiper mySwiper">
-            <h2 class="genre-title">Романы</h2>
-            <div class="swiper-wrapper"></div>
-            <div class="swiper-pagination"></div>
-        </div>
+    <!-- Контейнеры для слайдеров по жанрам -->
+    <div id="fantasy" class="swiper mySwiper">
+        <h2 class="genre-title">Фэнтези</h2>
+        <div class="swiper-wrapper"></div>
+        <div class="swiper-pagination"></div>
     </div>
 
 
-   
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="{% static 'books/js/main.js' %}"></script>
-</body>
-</html>
+
+    <div id="detective" class="swiper mySwiper">
+        <h2 class="genre-title">Детективы</h2>
+        <div class="swiper-wrapper"></div>
+        <div class="swiper-pagination"></div>
+    </div>
+
+    <div id="manga" class="swiper mySwiper">
+        <h2 class="genre-title">Манга</h2>
+        <div class="swiper-wrapper"></div>
+        <div class="swiper-pagination"></div>
+    </div>
+
+    <div id="romance" class="swiper mySwiper">
+        <h2 class="genre-title">Романы</h2>
+        <div class="swiper-wrapper"></div>
+        <div class="swiper-pagination"></div>
+    </div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="{% static 'books/js/main.js' %}"></script>
+{% endblock %}

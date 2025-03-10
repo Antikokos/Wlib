@@ -1,62 +1,46 @@
+{% extends 'base.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Поиск книги</title>
-    <link rel="icon" href="{% static 'books/img/Wlogo.svg' %}">
+
+{% block title %}
+Поиск: {{ query }}
+{% endblock %}
+
+{% block extra_head %}
     <link rel="stylesheet" href="{% static 'books/css/search.css' %}">
-</head>
-<body>
+{% endblock %}
 
-    <nav>
-        <div style="display: flex; align-items: center;">
-            <a href="{% url 'home' %}">
-                <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
-            </a>
-        </div>
-        <div class="search-container">
-            <form action="{% url 'search' %}" method="get">
-                <input class="search-bar" type="text" name="q" placeholder="Поиск книг...">
-                <button class="search-button" type="submit">Поиск</button>
-            </form>
-        </div>
-        <div class="user-container">
-            <div class="user-icon"></div>
-        </div>
-    </nav>
 
-    <div class="sort-container" id="sort-container">
-        <select class="sort-select" id="sortOption">
-            <option value="pages">Кол-ву страниц</option>
-            <option value="year">Году выхода</option>
-        </select>
-        <button class="sort-button" onclick="sortBooks()">Сортировать</button>
-    </div>
+{% block content %}
+<div class="sort-container" id="sort-container">
+    <select class="sort-select" id="sortOption">
+        <option value="pages">Кол-ву страниц</option>
+        <option value="year">Году выхода</option>
+    </select>
+    <button class="sort-button" onclick="sortBooks()">Сортировать</button>
+</div>
 
-    <div class="container">
-        <h2 id="result-title">Результаты поиска для "{{ query }}"</h2>
-        <div class="book-container" id="book-container">
-            {% for book in books %}
-            <a href="{% url 'book_detail' book.id %}">
-                <div class="book-card">
-                    <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
-                    <div class="book-info">
-                        <h3>{{ book.title }}</h3>
-                        <p>Автор(ы): {{ book.authors }}</p>
-                        <p>Издатель: {{ book.publisher }}</p>
-                        <p>Кол-во страниц: {{ book.page_count }}</p>
-                        <p>Год выхода: {{ book.published_date }}</p>
-                    </div>
+<div class="container">
+    <h2 id="result-title">Результаты поиска для "{{ query }}"</h2>
+    <div class="book-container" id="book-container">
+        {% for book in books %}
+        <a href="{% url 'book_detail' book.id %}">
+            <div class="book-card">
+                <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                <div class="book-info">
+                    <h3>{{ book.title }}</h3>
+                    <p>Автор(ы): {{ book.authors }}</p>
+                    <p>Издатель: {{ book.publisher }}</p>
+                    <p>Кол-во страниц: {{ book.page_count }}</p>
+                    <p>Год выхода: {{ book.published_date }}</p>
                 </div>
-            </a>
-            {% endfor %}
-        </div>
+            </div>
+        </a>
+        {% endfor %}
     </div>
+</div>
 
-    <script src="{% static 'books/js/main.js' %}"></script>
+    
 
-</body>
-</html>
+<script src="{% static 'books/js/main.js' %}"></script>
+{% endblock %}
