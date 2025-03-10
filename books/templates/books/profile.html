@@ -5,21 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль пользователя</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #1d1f21;
-            color: #f5f5f5;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #1d1f21;
+            color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Навигация */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #2c2f33;
+            border-bottom: 2px solid #C71585;
+        }
+
+        nav a {
+            color: #f5f5f5;
+            text-decoration: none;
+            padding: 10px 15px;
+            font-size: 28px;
+        }
+
+        nav a:hover {
+            background-color: #C71585;
+            border-radius: 5px;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            margin-left: -50px;
+        }
+
+        .search-bar {
+            padding: 10px;
+            border-radius: 25px;
+            border: 1px solid #C71585;
+            background-color: #2c2f33;
+            color: #f5f5f5;
+            width: 500px;
+        }
+
+        .search-bar::placeholder {
+            color: #f5f5f5;
+        }
+
+        .search-button {
+            background-color: #C71585;
+            border: none;
+            padding: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .search-button:hover {
+            background-color: #a3126b;
+        }
+
+        /* Контейнер иконки пользователя */
+        .user-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            background-image: url('https://via.placeholder.com/40');
+            background-size: cover;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #C71585; /* Добавим рамку вокруг иконки */
         }
 
         .container {
             width: 80%;
-            margin: 20px auto;
+            margin: 80px auto 20px; /* Добавлен отступ сверху */
             background: #2c2f33;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            flex: 1;
         }
 
         .profile {
@@ -62,31 +144,94 @@
             background: #a3126b;
         }
 
-        .home-icon {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            color: #C71585;
-            cursor: pointer;
+        .tabs {
+            display: flex;
+            margin-top: 20px;
+            border-bottom: 2px solid #C71585;
         }
 
-        .home-icon:hover {
-            color: #a3126b;
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #C71585;
+            background: #2c2f33;
+            color: #f5f5f5;
+        }
+
+        .tab.active {
+            background: #C71585;
+            color: white;
+        }
+
+        .content {
+            display: none;
+            padding: 20px;
+            color: #f5f5f5;
+        }
+
+        .content.active {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="home-icon" onclick="window.location.href='{% url 'home' %}'">&#8962;</div>
+    <!-- Навигация -->
+    <nav>
+        <div style="display: flex; align-items: center;">
+            <img class="logo" src="logo.svg" alt="Logo" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
+        </div>
+        <div class="search-container">
+            <input class="search-bar" type="text" placeholder="Поиск книг...">
+            <button class="search-button">Поиск</button>
+        </div>
+        <div class="user-container">
+            <!-- Иконка пользователя с пустым фоном -->
+            <div class="user-icon"></div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="profile">
             <div class="avatar">👤</div>
             <div class="info">
-                <h2>{{ user.username }}</h2>
-                <p>Email: {{ user.email }}</p>
-                <button onclick="window.location.href='{% url 'logout' %}'">Выйти</button>
+                <h2>Имя пользователя</h2>
+                <p>Email: user@example.com</p>
+                <button onclick="logout()">Выйти</button>
             </div>
         </div>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab(0)">Прочитано</div>
+            <div class="tab" onclick="switchTab(1)">Читаю</div>
+            <div class="tab" onclick="switchTab(2)">В планах</div>
+        </div>
+        <div class="content active" id="tab-0">
+            <h3>Прочитанные книги</h3>
+            <p>Список книг, которые пользователь уже прочитал.</p>
+        </div>
+        <div class="content" id="tab-1">
+            <h3>Сейчас читаю</h3>
+            <p>Список книг, которые пользователь читает в данный момент.</p>
+        </div>
+        <div class="content" id="tab-2">
+            <h3>Планы на чтение</h3>
+            <p>Список книг, которые пользователь собирается прочитать.</p>
+        </div>
     </div>
+    <script>
+        function switchTab(index) {
+            let tabs = document.querySelectorAll('.tab');
+            let contents = document.querySelectorAll('.content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            tabs[index].classList.add('active');
+            contents[index].classList.add('active');
+        }
+
+        function logout() {
+            alert('Выход из системы');
+        }
+    </script>
 </body>
 </html>
