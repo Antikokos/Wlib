@@ -33,7 +33,7 @@ nav {
 
 
 
-.search-container {
+/* .search-container {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -65,7 +65,7 @@ nav {
 
 .search-button:hover {
     background-color: #a3126b;
-}
+} */
 
 .user-container {
     display: flex;

@@ -8,24 +8,32 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="{% static 'books/css/home.css' %}">
     <link rel="icon" href="{% static 'books/img/Wlogo.svg' %}">
+    <script src="https://kit.fontawesome.com/b8991598b2.js"></script>
 </head>
 <body>
 
     <!-- Навигация -->
     <nav>
-        <div style="display: flex; align-items: center;">
+        <div class="logo-container">
             <a href="{% url 'home' %}">
-                <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
+                <img class="logo" src="{% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;">
             </a>
-            </div>
-        <div class="search-container">
-            <form action="{% url 'search' %}" method="get">
-                <input class="search-bar" type="text" name="q" placeholder="Поиск книг...">
-                <button class="search-button" type="submit">Поиск</button>
+        </div>
+    
+        <div class="search-box">
+            <form action="{% url 'search' %}" method="get" class="search-form">
+                <input class="search-txt" type="text" name="q" placeholder="Поиск книг...">
+                <a class="header-btn">
+                    <i class="fas fa-search"></i>
+                </a>
             </form>
         </div>
+    
         <div class="user-container">
-             <a href="{% url 'login' %}"><div class="user-icon"></div></a>
+            <a class="header-btn" href="{% url 'login' %}">
+                <i class="fas fa-user"></i>
+            </a>
+
         </div>
     </nav>
 

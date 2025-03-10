@@ -1,11 +1,8 @@
-@font-face {
-    font-family: 'Rostov';
-    src: url("{% static '/books/fonts/Rostov.ttf' %}") format('truetype');
-}
+
 
 /* Общие стили */
 body { 
-    font-family: Rostov, sans-serif;
+    font-family: Arial, sans-serif;
     background-color: #1d1f21;
     color: #f5f5f5;
     margin: 0;
@@ -29,68 +26,88 @@ h1, h2, h3 {
     margin-top: 40px;
 }
 
+
+
+
+
 /* Навигация */
 nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 1%;
     background-color: #2c2f33;
-    border-bottom: 2px solid #C71585;
-}
-
-
-.search-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-bottom: 5px solid #C71585;
+    vertical-align: center;
     position: relative;
-    width: 100%;
-    margin-left: -50px;
+    padding-right: 40px;
+    padding-left: 35px;
 }
 
-.search-bar {
-    padding: 10px;
-    border-radius: 25px;
-    border: 1px solid #C71585;
-    background-color: #2c2f33;
-    color: #f5f5f5;
-    width: 500px;
-}
-
-.search-bar::placeholder {
-    color: #f5f5f5;
-}
-
-.search-button {
-    background-color: #C71585;
-    border: none;
-    padding: 10px;
-    border-radius: 25px;
-    cursor: pointer;
-    margin-left: 10px;
-}
-
-.search-button:hover {
-    background-color: #a3126b;
-}
-
-/* Контейнер иконки пользователя */
-.user-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.user-icon {
-    width: 40px;
+.search-box {
+    display: flex; /* Добавляем Flexbox */
+    align-items: center; /* Выравниваем элементы по центру вертикально */
+    background: black !important;
     height: 40px;
-    background-image: url('https://via.placeholder.com/40');
-    background-size: cover;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid #C71585; /* Добавим рамку вокруг иконки */
+    border-radius: 40px;
+    padding-left: 15px;
+    flex-grow: 1;
+    max-width: 600px; /* Ограничиваем максимальную ширину */
+    margin: 0 20px; /* Добавляем отступы */
+    max-width: 600px;
+    margin: 0 auto; 
 }
+
+.header-btn {
+    color: #C71585;
+    float: right;
+    height: 37px;
+    width: 37px;
+    border-radius: 50%;
+    background: #1d1f21;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    border: 2px solid #C71585;
+    cursor: pointer;
+}
+
+.search-txt {
+    border: none;
+    background: none;
+    outline: none;
+    float: left;
+    padding: 0;
+    color: white;
+    font-size: 16px;
+    transition: 0.4s;
+    line-height: 40px;
+    width: 90%;
+}
+
+.search-form {
+    width: 100%;
+}
+
+/* это нужно чтобы автозаполнение браузера не ломало форматирование */
+.search-box .search-txt:-webkit-autofill,
+.search-box .search-txt:-webkit-autofill:hover,
+.search-box .search-txt:-webkit-autofill:focus,
+.search-box .search-txt:-webkit-autofill:active {
+    -webkit-text-fill-color: white !important;
+    -webkit-box-shadow: 0 0 0px 1000px black inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.search-box .search-txt:-moz-autofill {
+    color: white !important;
+    background-color: black !important;
+}
+
+
+
+
 
 /* Контейнер книг */
 
