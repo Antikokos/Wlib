@@ -11,37 +11,23 @@ function fetchRandomBooks(genre, containerId) {
             const swiperWrapper = container.querySelector('.swiper-wrapper');
             swiperWrapper.innerHTML = ''; // Очистка контейнера перед загрузкой новых книг
 
-            if (!data.items) {
-                console.error('Нет данных для жанра:', genre);
-                swiperWrapper.innerHTML = `<p>Книги не найдены для жанра: ${genre}</p>`;
-                return;
-            }
-
             // Генерация случайных книг из полученных данных
             const randomBooks = getRandomItems(data.items, 10); // Выбираем 10 книг
             randomBooks.forEach(item => {
                 const title = item.volumeInfo.title || 'Без названия';
                 const authors = item.volumeInfo.authors ? item.volumeInfo.authors.join(', ') : 'Неизвестные авторы';
                 const imageUrl = item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/200x240/444';
-                const publisher = item.volumeInfo.publisher || 'Неизвестный издатель';
-                const pageCount = item.volumeInfo.pageCount || 'Неизвестно';
-                const publishedDate = item.volumeInfo.publishedDate || 'Неизвестно';
 
                 const slide = document.createElement('div');
                 slide.classList.add('swiper-slide');
                 slide.innerHTML = `
-                    <a href="{% url 'book_detail' %}"> <!-- Добавьте сюда ID книги, если нужно -->
-                        <div class="book-card">
-                            <div class="book-image" style="background-image: url('${imageUrl}');"></div>
-                            <div class="book-info">
-                                <h3>${title}</h3>
-                                <p>Автор: ${authors}</p>
-                                <p>Издатель: ${publisher}</p>
-                                <p>Кол-во страниц: ${pageCount}</p>
-                                <p>Год выхода: ${publishedDate}</p>
-                            </div>
+                    <div class="book-card">
+                        <div class="book-image" style="background-image: url('${imageUrl}');"></div>
+                        <div class="book-info">
+                            <h3>${title}</h3>
+                            <p>Автор: ${authors}</p>
                         </div>
-                    </a>
+                    </div>
                 `;
                 swiperWrapper.appendChild(slide);
             });
@@ -55,16 +41,12 @@ function fetchRandomBooks(genre, containerId) {
                     clickable: true,
                 },
                 navigation: {
-                    nextEl: `.swiper-button-next`,
-                    prevEl: `.swiper-button-prev`,
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
                 },
             });
         })
-        .catch(error => {
-            console.error('Ошибка при загрузке книг:', error);
-            const container = document.getElementById(containerId);
-            container.innerHTML = `<p>Ошибка при загрузке книг для жанра: ${genre}</p>`;
-        });
+        .catch(error => console.error('Ошибка при загрузке книг:', error));
 }
 
 // Функция для получения случайных элементов
@@ -88,7 +70,7 @@ genres.forEach(genre => {
     fetchRandomBooks(genre, genre);
 });
 
-// Функция сортировки книг (если нужно)
+
 function sortBooks() {
     const sortOption = document.getElementById("sortOption").value;
     const books = Array.from(document.querySelectorAll('.book-card'));
@@ -111,19 +93,16 @@ function sortBooks() {
     bookContainer.innerHTML = '';
     books.forEach(book => bookContainer.appendChild(book));
 }
-
-// Инициализация Swiper для каждого слайдера
-genres.forEach(genre => {
-    new Swiper(`#${genre}`, {
-        slidesPerView: 4,
-        spaceBetween: 10,
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-        },
-    });
+const swiper = new Swiper('.mySwiper', {
+    allowTouchMove: false,
+    slidesPerView: 4,
+    spaceBetween: 10,
+    navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+    },
+    pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+    },
 });

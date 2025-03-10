@@ -2,8 +2,44 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 import requests
 
+from django.shortcuts import render
+from .models import Book  # Импорт модели
+
+from django.shortcuts import render
+import requests
+
+
 def home(request):
-    return render(request, 'books/home.html')
+    api_key = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
+    genres = {
+        "fantasy": "subject:fantasy",
+        "detective": "subject:detective",
+        "manga": "subject:manga",
+        "romance": "subject:romance",
+    }
+
+    books_by_genre = {}
+
+    for genre, query in genres.items():
+        url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={api_key}&maxResults=10'
+        response = requests.get(url)
+        data = response.json()
+        books = []
+
+        if 'items' in data:
+            for item in data['items']:
+                book = {
+                    'id': item['id'],
+                    'title': item['volumeInfo'].get('title', 'Без названия'),
+                    'authors': ', '.join(item['volumeInfo'].get('authors', ['Неизвестные авторы'])),
+                    'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', ''),
+                }
+                books.append(book)
+
+        books_by_genre[genre] = books
+
+    return render(request, 'books/home.html', books_by_genre)
+
 
 def search(request):
     query = request.GET.get('q', '')
