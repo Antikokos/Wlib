@@ -6,58 +6,104 @@
     <link rel="stylesheet" href="{% static 'books/css/books-sliders.css' %}">
 {% endblock %}
 
-
 {% block content %}
 <div class="container">
 
+    <!-- Навигация для слайдеров -->
     <div class="sliders">
         <div class="sliders-navigation">
             <button class="sliders-btn swiper-button-prev">
                 <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M6 11L0.999995 6L6 0.999998" stroke="white"/>
-                    </svg>
+                </svg>
             </button>
         </div>
         <div class="sliders-navigation">
             <button class="sliders-btn swiper-button-next">
                 <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 11L6.00001 6L1 0.999997" stroke="white"/>
-                    </svg>
-                    
+                </svg>
             </button>
         </div>
     </div>
-    
 
     <!-- Контейнеры для слайдеров по жанрам -->
     <div id="fantasy" class="swiper mySwiper">
         <h2 class="genre-title">Фэнтези</h2>
-        <div class="swiper-wrapper"></div>
+        <div class="swiper-wrapper">
+            {% for book in fantasy_books %}
+                <a href="{% url 'book_detail' book.id %}" class="swiper-slide">
+                    <div class="book-card">
+                        <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                        <div class="book-info">
+                            <h3>{{ book.title }}</h3>
+                            <p>Автор(ы): {{ book.authors }}</p>
+                            <p>Издатель: {{ book.publisher }}</p>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
         <div class="swiper-pagination"></div>
     </div>
 
-
-
     <div id="detective" class="swiper mySwiper">
         <h2 class="genre-title">Детективы</h2>
-        <div class="swiper-wrapper"></div>
+        <div class="swiper-wrapper">
+            {% for book in detective_books %}
+                <a href="{% url 'book_detail' book.id %}" class="swiper-slide">
+                    <div class="book-card">
+                        <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                        <div class="book-info">
+                            <h3>{{ book.title }}</h3>
+                            <p>Автор(ы): {{ book.authors }}</p>
+                            <p>Издатель: {{ book.publisher }}</p>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
         <div class="swiper-pagination"></div>
     </div>
 
     <div id="manga" class="swiper mySwiper">
         <h2 class="genre-title">Манга</h2>
-        <div class="swiper-wrapper"></div>
+        <div class="swiper-wrapper">
+            {% for book in manga_books %}
+                <a href="{% url 'book_detail' book.id %}" class="swiper-slide">
+                    <div class="book-card">
+                        <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                        <div class="book-info">
+                            <h3>{{ book.title }}</h3>
+                            <p>Автор(ы): {{ book.authors }}</p>
+                            <p>Издатель: {{ book.publisher }}</p>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
         <div class="swiper-pagination"></div>
     </div>
 
     <div id="romance" class="swiper mySwiper">
         <h2 class="genre-title">Романы</h2>
-        <div class="swiper-wrapper"></div>
+        <div class="swiper-wrapper">
+            {% for book in romance_books %}
+                <a href="{% url 'book_detail' book.id %}" class="swiper-slide">
+                    <div class="book-card">
+                        <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                        <div class="book-info">
+                            <h3>{{ book.title }}</h3>
+                            <p>Автор(ы): {{ book.authors }}</p>
+                            <p>Издатель: {{ book.publisher }}</p>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
         <div class="swiper-pagination"></div>
     </div>
 </div>
-
-
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script src="{% static 'books/js/main.js' %}"></script>
