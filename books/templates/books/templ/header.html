@@ -1,0 +1,25 @@
+{% load static %}
+
+<div class="header">
+    <div class="logo-container">
+        <a href="{% url 'home' %}">
+            <img class="logo" src="{% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;">
+        </a>
+    </div>
+
+    <div class="search-box">
+        <form action="{% url 'search' %}" method="get" class="search-form">
+            <input class="search-txt" type="text" name="q" placeholder="Поиск книг...">
+            <a class="header-btn">
+                <i class="fas fa-search"></i>
+            </a>
+        </form>
+    </div>
+
+    <div class="user-container">
+        <a class="header-btn" href="{% url 'login' %}">
+            <i class="fas fa-user"></i>
+        </a>
+
+    </div>
+</div>
