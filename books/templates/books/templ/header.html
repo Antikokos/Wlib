@@ -10,16 +10,16 @@
     <div class="search-box">
         <form action="{% url 'search' %}" method="get" class="search-form">
             <input class="search-txt" type="text" name="q" placeholder="Поиск книг...">
-            <a class="header-btn">
+            <button class="header-btn" type="submit">
                 <i class="fas fa-search"></i>
-            </a>
+            </button>
         </form>
     </div>
 
     <div class="user-container">
-        <a class="header-btn" href="{% url 'login' %}">
+        <button class="header-btn" href="{% url 'login' %}">
             <i class="fas fa-user"></i>
-        </a>
+        </button>
 
     </div>
 </div>
