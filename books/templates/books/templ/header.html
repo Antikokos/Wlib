@@ -17,9 +17,8 @@
     </div>
 
     <div class="user-container">
-        <a class="header-btn" href="{% url 'login' %}">
+        <a class="header-btn" href="{% if request.user.is_authenticated %}{% url 'profile' %}{% else %}{% url 'login' %}{% endif %}">
             <i class="fas fa-user"></i>
         </a>
-
     </div>
 </div>
