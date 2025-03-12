@@ -77,14 +77,14 @@
     </style>
 </head>
 <body>
-    <div class="home-icon" onclick="window.location.href='{% url 'home' %}'">&#8962;</div>
+    <div class="home-icon" onclick="location.href='{% url 'home' %}'">&#8962;</div>
     <div class="container">
         <div class="profile">
             <div class="avatar">👤</div>
             <div class="info">
                 <h2>{{ user.username }}</h2>
                 <p>Email: {{ user.email }}</p>
-                <button onclick="window.location.href='{% url 'logout' %}'">Выйти</button>
+                <button onclick="location.href='{% url 'logout' %}'">Выйти</button>
             </div>
         </div>
     </div>
