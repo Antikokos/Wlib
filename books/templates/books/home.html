@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -15,8 +14,10 @@
     <!-- Навигация -->
     <nav>
         <div style="display: flex; align-items: center;">
-            <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
-        </div>
+            <a href="{% url 'home' %}">
+                <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;"> <!-- Логотип теперь будет занимать пространство -->
+            </a>
+            </div>
         <div class="search-container">
             <form action="{% url 'search' %}" method="get">
                 <input class="search-bar" type="text" name="q" placeholder="Поиск книг...">
@@ -24,13 +25,34 @@
             </form>
         </div>
         <div class="user-container">
-            <!-- Иконка пользователя с пустым фоном -->
-            <div class="user-icon"></div>
+            <a href="{% if request.user.is_authenticated %}{% url 'profile' %}{% else %}{% url 'login' %}{% endif %}">
+                <div class="user-icon"></div>
+            </a>
         </div>
+        
     </nav>
 
 
     <div class="container">
+
+        <div class="sliders">
+            <div class="sliders-navigation">
+                <button class="sliders-btn swiper-button-prev">
+                    <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 11L0.999995 6L6 0.999998" stroke="white"/>
+                        </svg>
+                </button>
+            <div class="sliders-navigation">
+                <button class="sliders-btn swiper-button-next">
+                    <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 11L6.00001 6L1 0.999997" stroke="white"/>
+                        </svg>
+                        
+                </button>
+            </div>
+        </div>
+        
+
         <!-- Контейнеры для слайдеров по жанрам -->
         <div id="fantasy" class="swiper mySwiper">
             <h2 class="genre-title">Фэнтези</h2>

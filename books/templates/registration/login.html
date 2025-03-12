@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход на сайт</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1d1f21;
+            color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal {
+            background-color: #2c2f33;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            width: 450px;
+            text-align: center;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 200px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group input {
+            width: 95%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #C71585;
+            background-color: #333;
+            color: #f5f5f5;
+            font-size: 16px;
+        }
+
+        .input-group input::placeholder {
+            color: #bbb;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #C71585;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .submit-button:hover {
+            background-color: #a3126b;
+        }
+
+        .links {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .links a {
+            color: #C71585;
+            text-decoration: none;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="modal-overlay">
+        <div class="modal">
+            <div class="logo-container">
+                <img src="" alt="Logo" class="logo">
+            </div>
+            <h2 class="modal-title">Вход на сайт</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" name="username" id="username" placeholder="Имя пользователя" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" name="password" id="password" placeholder="Пароль" required>
+                </div>
+                {{ form.errors }}
+                <button type="submit" class="submit-button">Войти</button>
+            </form>
+            <div class="links">
+                <a href="{% url 'register' %}">Нет аккаунта? Зарегистрироваться</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
