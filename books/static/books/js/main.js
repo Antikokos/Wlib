@@ -71,6 +71,35 @@ genres.forEach(genre => {
 });
 
 
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search-txt');
+
+    // Устанавливаем фокус на поле ввода после загрузки страницы
+    searchInput.focus();
+
+    // Обработчик события на изменение значения поля
+    searchInput.addEventListener('input', function() {
+        if (searchInput.value !== '') {
+            searchInput.style.color = 'white';
+            searchInput.style.backgroundColor = 'black';
+        } else {
+            searchInput.style.color = '';
+            searchInput.style.backgroundColor = '';
+        }
+    });
+
+    // Принудительно устанавливаем фокус на поле ввода после автозаполнения
+    setTimeout(function() {
+        searchInput.focus();
+    }, 100);
+});
+
+
+
+
+
+
+
 function sortBooks() {
     const sortOption = document.getElementById("sortOption").value;
     const books = Array.from(document.querySelectorAll('.book-card'));

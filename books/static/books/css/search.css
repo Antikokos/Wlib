@@ -1,93 +1,20 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #1d1f21;
-    color: #f5f5f5;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
 
-h1, h2 {
-    color: #C71585;
-}
 
-.container {
-    width: 90%;
-    margin: auto;
-    flex: 1;
-}
-
-nav {
+.search-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background-color: #2c2f33;
-    border-bottom: 2px solid #C71585;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-
-
-.search-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    margin-left: -50px;
-}
-
-.search-bar {
-    padding: 10px;
-    border-radius: 25px;
-    border: 1px solid #C71585;
-    background-color: #2c2f33;
-    color: #f5f5f5;
-    width: 500px;
-}
-
-.search-bar::placeholder {
-    color: #f5f5f5;
-}
-
-.search-button {
-    background-color: #C71585;
-    border: none;
-    padding: 10px;
-    border-radius: 25px;
-    cursor: pointer;
-    margin-left: 10px;
-}
-
-.search-button:hover {
-    background-color: #a3126b;
-}
-
-.user-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.user-icon {
-    width: 40px;
-    height: 40px;
-    background-image: url('https://via.placeholder.com/40');
-    background-size: cover;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid #C71585;
+    padding-top: 20px;
 }
 
 .sort-container {
     display: flex;
     justify-content: flex-end;
     margin: 20px 0;
-    display: none;
+    max-height: 100px;
+}
+
+p {
+    color: white;
 }
 
 .sort-button {
@@ -108,10 +35,15 @@ nav {
 .sort-select {
     padding: 10px;
     border-radius: 5px;
-    border: 1px solid #C71585;
+    border: 3px solid #a3126b;
     background-color: #2c2f33;
     color: #f5f5f5;
     font-size: 16px;
+}
+
+.bold-text {
+    font-weight: bold;
+    color: #bdc1c6;
 }
 
 .book-container {
@@ -128,6 +60,7 @@ nav {
 }
 
 .book-card {
+    display: flex; /* Делаем .book-card гибким контейнером */
     background-color: #333;
     padding: 20px;
     border-radius: 10px;
@@ -136,7 +69,7 @@ nav {
     transition: transform 0.3s ease;
     width: 100%;
     max-width: 100%;
-    height: auto;
+    height: 300px;
     position: relative;
     flex-shrink: 0;
 }
@@ -146,18 +79,20 @@ nav {
 }
 
 .book-image {
-    width: 250px;
-    height: 350px;
-    object-fit: cover;
-    background-color: #444;
-    border-radius: 10px;
-    margin-right: 20px;
-    float: left;
+    width: 200px; /* Фиксированная ширина */
+    height: 280px; /* Фиксированная высота */
+    background-size: cover; /* Растягивает изображение, чтобы оно покрывало элемент */
+    background-position: center; /* Центрирует изображение */
+    background-repeat: no-repeat; /* Запрещает повторение */
+    background-color: #444; /* Цвет фона, если изображение не загружено */
+    border-radius: 10px; /* Скругляет углы */
+    margin-right: 20px; /* Отступ справа */
+    margin-top: auto; /* Выравнивание по вертикальному центру */
+    margin-bottom: auto; /* Выравнивание по вертикальному центру */
 }
 
 .book-info {
-    margin-top: 10px;
-    margin-left: 270px;
+    flex: 1; /* Занимает все доступное пространство */
 }
 
 .book-info h3 {

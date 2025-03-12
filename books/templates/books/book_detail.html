@@ -1,29 +1,16 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Страница книги</title>
-    <link rel="stylesheet" href="../../static/books/css/book_detail.css">
-    <link rel="icon" href="{% static 'books/img/Wlogo.svg' %}">
-</head>
-<body>
-   <nav>
-        <div style="display: flex; align-items: center;">
-           <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;">
-        </div>
-        <div class="search-container">
-            <input class="search-bar" type="text" placeholder="Поиск книг...">
-            <button class="search-button">Поиск</button>
-        </div>
-        <div class="user-container">
-            <div class="user-icon"></div>
-        </div>
-    </nav>
 
-    <!-- Контейнер книги -->
-    <!-- books/templates/books/book_detail.html -->
+
+{% block title %}
+{{book.title}}
+{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="../../static/books/css/book_detail.css">
+{% endblock %}
+
+{% block content %}
 <div class="container">
     <div class="book-container">
         <div class="book-cover-container">
@@ -58,6 +45,5 @@
     </div>
 </div>
 
-    <script src="../../static/books/js/book_detail.js"></script>
-</body>
-</html>
+<script src="../../static/books/js/book_detail.js"></script>
+{% endblock %}
