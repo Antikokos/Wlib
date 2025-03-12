@@ -1,6 +1,11 @@
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+
 import requests
+from .forms import RegisterForm
+from django.views.generic.edit import FormView
+from django.urls import reverse_lazy
 
 def home(request):
     return render(request, 'books/home.html')
@@ -50,42 +55,21 @@ def book_detail(request, book_id):
     else:
         return render(request, 'books/404.html', {'message': 'Книга не найдена'})
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+class RegisterView(FormView):
+    template_name = 'books/register.html'
+    form_class = RegisterForm
+    success_url = reverse_lazy('login')
 
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
-from .forms import CustomUserCreationForm
+def login(request):
+    return render(request, 'books/login.html')
 
-def register_view(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('home')  # Перенаправляем на главную страницу после регистрации
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'books/register.html', {'form': form})
-
-def login_view(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)  # Используем стандартную форму входа
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('home')  # Перенаправляем на главную страницу
-    else:
-        form = AuthenticationForm()
-    return render(request, 'books/login.html', {'form': form})
 @login_required
-def profile_view(request):
+
+def profile(request):
     return render(request, 'books/profile.html')
 
 def logout_view(request):

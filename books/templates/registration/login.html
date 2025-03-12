@@ -111,17 +111,18 @@
     <div class="modal-overlay">
         <div class="modal">
             <div class="logo-container">
-                <img src="logo.svg" alt="Logo" class="logo">
+                <img src="" alt="Logo" class="logo">
             </div>
             <h2 class="modal-title">Вход на сайт</h2>
             <form method="post">
                 {% csrf_token %}
                 <div class="input-group">
-                    <input type="email" id="email" placeholder="Электронная почта" required>
+                    <input type="text" name="username" id="username" placeholder="Имя пользователя" required>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="password" placeholder="Пароль" required>
+                    <input type="password" name="password" id="password" placeholder="Пароль" required>
                 </div>
+                {{ form.errors }}
                 <button type="submit" class="submit-button">Войти</button>
             </form>
             <div class="links">

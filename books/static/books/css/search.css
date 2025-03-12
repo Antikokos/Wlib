@@ -1,10 +1,20 @@
 
 
+.search-header {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 20px;
+}
+
 .sort-container {
     display: flex;
     justify-content: flex-end;
     margin: 20px 0;
-    display: none;
+    max-height: 100px;
+}
+
+p {
+    color: white;
 }
 
 .sort-button {
@@ -25,10 +35,15 @@
 .sort-select {
     padding: 10px;
     border-radius: 5px;
-    border: 1px solid #C71585;
+    border: 3px solid #a3126b;
     background-color: #2c2f33;
     color: #f5f5f5;
     font-size: 16px;
+}
+
+.bold-text {
+    font-weight: bold;
+    color: #bdc1c6;
 }
 
 .book-container {
@@ -45,6 +60,7 @@
 }
 
 .book-card {
+    display: flex; /* Делаем .book-card гибким контейнером */
     background-color: #333;
     padding: 20px;
     border-radius: 10px;
@@ -53,7 +69,7 @@
     transition: transform 0.3s ease;
     width: 100%;
     max-width: 100%;
-    height: auto;
+    height: 300px;
     position: relative;
     flex-shrink: 0;
 }
@@ -63,18 +79,20 @@
 }
 
 .book-image {
-    width: 250px;
-    height: 350px;
-    object-fit: cover;
-    background-color: #444;
-    border-radius: 10px;
-    margin-right: 20px;
-    float: left;
+    width: 200px; /* Фиксированная ширина */
+    height: 280px; /* Фиксированная высота */
+    background-size: cover; /* Растягивает изображение, чтобы оно покрывало элемент */
+    background-position: center; /* Центрирует изображение */
+    background-repeat: no-repeat; /* Запрещает повторение */
+    background-color: #444; /* Цвет фона, если изображение не загружено */
+    border-radius: 10px; /* Скругляет углы */
+    margin-right: 20px; /* Отступ справа */
+    margin-top: auto; /* Выравнивание по вертикальному центру */
+    margin-bottom: auto; /* Выравнивание по вертикальному центру */
 }
 
 .book-info {
-    margin-top: 10px;
-    margin-left: 270px;
+    flex: 1; /* Занимает все доступное пространство */
 }
 
 .book-info h3 {
