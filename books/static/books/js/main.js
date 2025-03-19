@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
     searchInput.addEventListener('input', function() {
         if (searchInput.value !== '') {
             searchInput.style.color = 'white';
-            searchInput.style.backgroundColor = 'black';
+            searchInput.style.backgroundColor = '#1d1f21';
         } else {
             searchInput.style.color = '';
             searchInput.style.backgroundColor = '';
@@ -101,21 +101,27 @@ document.addEventListener('DOMContentLoaded', function() {
 function getTextValue(book, keyword) {
     const textElement = [...book.querySelectorAll('.book-info p')]
         .find(p => p.textContent.includes(keyword));
-    
-    return textElement ? parseInt(textElement.textContent.split(': ')[1]) || 0 : 0;
-}
-
-function getTextValue(book, keyword) {
-    const textElement = [...book.querySelectorAll('.book-info p')]
-        .find(p => p.textContent.includes(keyword));
 
     if (!textElement) {
         console.warn(`Не найдено поле "${keyword}" в`, book);
         return 0;
     }
 
-    const value = parseInt(textElement.textContent.replace(/\D/g, ''), 10);
+    let value = textElement.textContent.split(": ")[1]; // Извлекаем текст после ": "
     
+    // Для сортировки по году, берем первые 4 символа (год)
+    if (keyword === "Год выхода") {
+        if (value.length >= 10) {
+            // Если есть полный формат даты (например "2021-07-01"), сохраняем полную дату
+            return value;  // Возвращаем как строку для дальнейшего сравнения по полному формату
+        } else if (value.length >= 4) {
+            // Если это только год, берем первые 4 символа
+            return value.slice(0, 4);  // Только год
+        }
+    }
+    
+    // Для других случаев (например "Кол-во страниц") преобразуем в число
+    value = parseInt(value.replace(/\D/g, ''), 10);
     console.log(`Найдено: "${keyword}" → ${value}`);
     return value || 0;
 }
@@ -128,7 +134,16 @@ function sortBooks() {
         if (sortOption === "pages") {
             return getTextValue(b, "Кол-во страниц") - getTextValue(a, "Кол-во страниц");
         } else if (sortOption === "year") {
-            return getTextValue(b, "Год выхода") - getTextValue(a, "Год выхода");
+            const valueA = getTextValue(a, "Год выхода");
+            const valueB = getTextValue(b, "Год выхода");
+
+            // Если значения полные даты, то сортируем их как строки
+            if (valueA.length === 10 && valueB.length === 10) {
+                return valueB.localeCompare(valueA); // Сортируем по дате (год-месяц-день)
+            }
+
+            // Если это только годы, сортируем их как числа
+            return valueB - valueA; // Сортируем по году
         }
     });
 
@@ -164,3 +179,5 @@ function updateBookList(books) {
     bookContainer.innerHTML = ''; 
     bookContainer.appendChild(fragment);
 }
+
+

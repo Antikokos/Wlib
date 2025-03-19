@@ -54,7 +54,7 @@ p {
     font-size: 24px;
     color: white;
     transition: transform 0.3s ease;
-    /* padding-right: 150px; */
+    
 }
 
 .reverse-button:hover {
