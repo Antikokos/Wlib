@@ -98,27 +98,69 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+function getTextValue(book, keyword) {
+    const textElement = [...book.querySelectorAll('.book-info p')]
+        .find(p => p.textContent.includes(keyword));
+    
+    return textElement ? parseInt(textElement.textContent.split(': ')[1]) || 0 : 0;
+}
 
+function getTextValue(book, keyword) {
+    const textElement = [...book.querySelectorAll('.book-info p')]
+        .find(p => p.textContent.includes(keyword));
+
+    if (!textElement) {
+        console.warn(`Не найдено поле "${keyword}" в`, book);
+        return 0;
+    }
+
+    const value = parseInt(textElement.textContent.replace(/\D/g, ''), 10);
+    
+    console.log(`Найдено: "${keyword}" → ${value}`);
+    return value || 0;
+}
 
 function sortBooks() {
     const sortOption = document.getElementById("sortOption").value;
-    const books = Array.from(document.querySelectorAll('.book-card'));
+    const books = Array.from(document.querySelectorAll('.book-container a')); // Берем <a>, а не .book-card
 
-    if (sortOption === "pages") {
-        books.sort((a, b) => {
-            const aPages = parseInt(a.querySelector('.book-info p:nth-child(3)').textContent.split(': ')[1]);
-            const bPages = parseInt(b.querySelector('.book-info p:nth-child(3)').textContent.split(': ')[1]);
-            return bPages - aPages;
-        });
-    } else if (sortOption === "year") {
-        books.sort((a, b) => {
-            const aYear = parseInt(a.querySelector('.book-info p:nth-child(4)').textContent.split(': ')[1]);
-            const bYear = parseInt(b.querySelector('.book-info p:nth-child(4)').textContent.split(': ')[1]);
-            return bYear - aYear;
-        });
-    }
+    books.sort((a, b) => {
+        if (sortOption === "pages") {
+            return getTextValue(b, "Кол-во страниц") - getTextValue(a, "Кол-во страниц");
+        } else if (sortOption === "year") {
+            return getTextValue(b, "Год выхода") - getTextValue(a, "Год выхода");
+        }
+    });
 
     const bookContainer = document.getElementById('book-container');
-    bookContainer.innerHTML = '';
-    books.forEach(book => bookContainer.appendChild(book));
+    const fragment = document.createDocumentFragment(); 
+
+    books.forEach(book => fragment.appendChild(book)); // Вставляем <a>, а не .book-card
+
+    bookContainer.innerHTML = ''; 
+    bookContainer.appendChild(fragment); 
+}
+
+
+let isReversed = false;
+
+function reverseBooks() {
+    isReversed = !isReversed; // Переключаем флаг реверса
+    const bookContainer = document.getElementById('book-container');
+    const books = Array.from(bookContainer.children).reverse();
+    
+    updateBookList(books);
+
+    // Добавляем/убираем класс поворота
+    document.querySelector('.reverse-button').classList.toggle('rotated', isReversed);
+}
+
+function updateBookList(books) {
+    const bookContainer = document.getElementById('book-container');
+    const fragment = document.createDocumentFragment();
+
+    books.forEach(book => fragment.appendChild(book));
+    
+    bookContainer.innerHTML = ''; 
+    bookContainer.appendChild(fragment);
 }
