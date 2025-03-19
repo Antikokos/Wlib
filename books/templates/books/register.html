@@ -223,7 +223,7 @@
         <div class="modal">
             <!-- Логотип и название сайта -->
             <div class="logo-container">
-                <img class="logo" src=" {% static 'books/img/logo.svg' %}" alt="дабл ю" style="width: 200px;">
+                <img class="logo" src="{% static 'books/img/logo.svg' %}" alt="Логотип" style="width: 200px;">
             </div>
 
             <!-- Заголовок регистрации -->
@@ -240,25 +240,29 @@
             </div>
 
             <!-- Форма регистрации -->
-            <form id="auth-form" onsubmit="handleSubmit(event)">
+            <form method="post" id="register-form">
+                {% csrf_token %}
                 <div class="input-group fade-in">
-                    <input type="email" id="email" placeholder="Электронная почта" required>
+                    <input type="text" name="username" id="username" placeholder="Имя пользователя" required>
                 </div>
                 <div class="input-group fade-in">
-                    <input type="password" id="password" placeholder="Пароль" required>
+                    <input type="email" name="email" id="email" placeholder="Электронная почта" required>
+                </div>
+                <div class="input-group fade-in">
+                    <input type="password" name="password" id="password" placeholder="Пароль" required>
                     <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password')">👁️</button>
                 </div>
                 <div class="input-group fade-in">
-                    <input type="password" id="confirm-password" placeholder="Подтвердите пароль" required>
-                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('confirm-password')">👁️</button>
+                    <input type="password" name="confirm_password" id="confirm_password" placeholder="Подтвердите пароль" required>
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('confirm_password')">👁️</button>
                 </div>
-                <p class="error-message fade-in" id="error-message"></p>
+                {{ form.errors }}
                 <button type="submit" class="submit-button fade-in">Зарегистрироваться</button>
             </form>
 
             <!-- Ссылки для перехода на страницу входа -->
             <div class="links">
-                <a href="{% url 'login' %}">Уже есть аккаунт? Войти</a>
+                <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
             </div>
         </div>
     </div>
@@ -276,41 +280,7 @@
 
         // Обработка социальной авторизации
         function handleSocialAuth(provider) {
-            alert(`Быстрый вход через ${provider} в разработке`);
-        }
-
-        // Обработка отправки формы
-        function handleSubmit(event) {
-            event.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-            const errorMessage = document.getElementById('error-message');
-
-            // Валидация email
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            if (!emailRegex.test(email)) {
-                errorMessage.textContent = 'Некорректный email';
-                return;
-            }
-
-            // Валидация пароля
-            if (password.length < 6) {
-                errorMessage.textContent = 'Пароль должен содержать минимум 6 символов';
-                return;
-            }
-
-            // Проверка совпадения паролей
-            if (password !== confirmPassword) {
-                errorMessage.textContent = 'Пароли не совпадают';
-                return;
-            }
-
-            // Очистка ошибки
-            errorMessage.textContent = '';
-
-            // Отправка данных на сервер (заглушка)
-            alert('Регистрация прошла успешно!');
+            alert(`Регистрация через ${provider} в разработке`);
         }
     </script>
 </body>

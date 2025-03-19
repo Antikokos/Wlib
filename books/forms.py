@@ -1,8 +1,18 @@
 from django import forms
+from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser  # Импортируем кастомную модель пользователя
 
-class CustomUserCreationForm(UserCreationForm):
+class RegisterForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+
     class Meta:
-        model = CustomUser  # Указываем кастомную модель
-        fields = ('username', 'email', 'password1', 'password2')  # Поля для регистрации
+        model = User
+        fields = ("username", "email", "password1", "password2")
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        if commit:
+            user.save()
+        return user
+

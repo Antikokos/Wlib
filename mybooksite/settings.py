@@ -13,7 +13,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 
+
 from django.conf.global_settings import STATICFILES_DIRS
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +30,7 @@ SECRET_KEY = 'django-insecure-e&k))in6o&y6xqbh^waw^n!sn7yueci9eeh1p6*%!^w=_!8&52
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -80,8 +82,12 @@ WSGI_APPLICATION = 'mybooksite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres.cijgthdmrtpnjcjzmpul',
+        'PASSWORD': 'qwe123!@#',  
+        'HOST': 'aws-0-eu-central-1.pooler.supabase.com',  
+        'PORT': '6543',  
     }
 }
 
@@ -116,15 +122,18 @@ USE_I18N = True
 
 USE_TZ = True
 
-AUTH_USER_MODEL = 'books.CustomUser'
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'books/static']
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Redirect to home after login
+LOGIN_REDIRECT_URL = reverse_lazy('home')

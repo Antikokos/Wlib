@@ -1,4 +1,5 @@
 from django.contrib import admin
 
-
-# Register your models here.
+from .models import Book  # Импортируй свою модель
+ 
+admin.site.register(Book)  # Регистрируем модель
