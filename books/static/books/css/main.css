@@ -1,15 +1,10 @@
-
-
-
-
-body { 
-    font-family: "Inter", sans-serif;
+/* Общие стили */
+body {
+    font-family: Arial, sans-serif;
     background-color: #1d1f21;
     color: #f5f5f5;
     margin: 0;
     padding: 0;
-    /* display: flex; */
-    /* flex-direction: column; */
     min-height: 100vh;
 }
 
@@ -17,8 +12,13 @@ h1, h2, h3 {
     color: #C71585;
 }
 
+/* Заголовок жанра */
+.genre-title {
+    font-size: 50px;
+    margin: 20px 0;
+}
 
-/* Header */
+/* Шапка */
 .header {
     display: flex;
     justify-content: space-between;
@@ -37,37 +37,19 @@ h1, h2, h3 {
     width: 90%;
     margin: auto;
     flex: 1;
-
 }
 
-
+/* Поиск */
 .search-box {
-    display: flex; /* Добавляем Flexbox */
-    align-items: center; /* Выравниваем элементы по центру вертикально */
+    display: flex;
+    align-items: center;
     background: black !important;
     height: 40px;
     border-radius: 40px;
     padding-left: 15px;
     flex-grow: 1;
-    max-width: 600px; /* Ограничиваем максимальную ширину */
-    margin: 0 20px; /* Добавляем отступы */
     max-width: 600px;
-    margin: 0 auto; 
-}
-
-.header-btn {
-    color: #C71585;
-    float: right;
-    height: 40px;
-    width: 40px;
-    border-radius: 50%;
-    background: #1d1f21;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-decoration: none;
-    border: 2px solid #C71585;
-    cursor: pointer;
+    margin: 0 20px;
 }
 
 .search-txt {
@@ -87,7 +69,7 @@ h1, h2, h3 {
     width: 100%;
 }
 
-/* это нужно чтобы автозаполнение браузера не ломало форматирование */
+/* Это нужно, чтобы автозаполнение браузера не ломало форматирование */
 .search-box .search-txt:-webkit-autofill,
 .search-box .search-txt:-webkit-autofill:hover,
 .search-box .search-txt:-webkit-autofill:focus,
@@ -102,7 +84,23 @@ h1, h2, h3 {
     background-color: black !important;
 }
 
+/* Кнопка пользователя */
+.header-btn {
+    color: #C71585;
+    float: right;
+    height: 37px;
+    width: 37px;
+    border-radius: 50%;
+    background: #1d1f21;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    border: 2px solid #C71585;
+    cursor: pointer;
+}
 
+/* Футер */
 .footer {
     margin-top: 30px;
     display: flex;
@@ -110,8 +108,131 @@ h1, h2, h3 {
     align-items: center;
     padding: 3% 0;
     background-color: #2c2f33;
-    border-top: 5px solid #C71585; /* Измените border-bottom на border-top */
+    border-top: 5px solid #C71585;
     vertical-align: center;
-    bottom: 0; /* Размещение внизу */
-    width: 100%; /* Ширина на всю страницу */
+    bottom: 0;
+    width: 100%;
+}
+
+/* Стили для карусели */
+.swiper {
+    width: 100%;
+    height: 100%;
+    margin-bottom: 0px;
+}
+
+/* Стили для обертки слайдов */
+.swiper-wrapper {
+    display: flex;
+    gap: 20px;
+    padding-bottom: 20px;
+}
+
+/* Стили для слайда */
+.swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #b50a9e;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для карточки книги */
+.book-card {
+    background-color: #333;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+    width: 160px; /* Фиксированная ширина карточки */
+    height: 300px; /* Фиксированная высота карточки */
+    position: relative;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    margin: 0 10px; /* Отступ между карточками */
+    overflow: hidden; /* Скрыть лишнее содержимое */
+}
+
+/* Фиолетовая полоска при наведении */
+.book-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #C71585;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.book-card:hover::after {
+    transform: scaleX(1);
+}
+
+/* Анимация изображения и текста при наведении */
+.book-card:hover .book-image {
+    transform: translateY(-5px); /* Сдвиг изображения вверх */
+}
+
+.book-card:hover .book-info {
+    transform: translateY(-5px); /* Сдвиг текста вверх */
+}
+
+/* Стили для изображения книги */
+.book-image {
+    width: 150px; /* Ширина изображения */
+    height: 200px; /* Высота изображения */
+    object-fit: cover; /* Чтобы изображение заполняло блок */
+    background-position: center; /* Центрирование изображения */
+    background-repeat: no-repeat;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    align-items: center;
+    margin: 0 auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+/* Стили для информации о книге */
+.book-info {
+    margin-top: 10px;
+    transition: transform 0.3s ease;
+}
+
+.book-info h3 {
+    font-size: 16px;
+    margin: 5px 0;
+    white-space: nowrap; /* Запрет переноса текста */
+    overflow: hidden; /* Скрыть лишний текст */
+    text-overflow: ellipsis; /* Добавить многоточие */
+}
+
+.book-info p {
+    font-size: 14px;
+    margin: 5px 0;
+    white-space: nowrap; /* Запрет переноса текста */
+    overflow: hidden; /* Скрыть лишний текст */
+    text-overflow: ellipsis; /* Добавить многоточие */
+}
+
+/* Убираем подсветку ссылок внутри карточек книг */
+.book-card a {
+    text-decoration: none; /* Убираем подчеркивание */
+    color: inherit; /* Наследуем цвет текста */
+}
+
+.book-card a:hover {
+    text-decoration: none; /* Убираем подчеркивание при наведении */
+    color: inherit; /* Наследуем цвет текста при наведении */
+}
+
+/* Стили для пагинации Swiper */
+.swiper-pagination {
+    position: relative;
+    margin-top: 10px;
 }

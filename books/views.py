@@ -7,8 +7,52 @@ from .forms import RegisterForm
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+import requests
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
+
 def home(request):
-    return render(request, 'books/home.html')
+    fantasy_books = get_books_by_genre('fantasy')
+    detective_books = get_books_by_genre('detective')
+    manga_books = get_books_by_genre('manga')
+    romance_books = get_books_by_genre('romance')
+
+    context = {
+        'fantasy_books': fantasy_books,
+        'detective_books': detective_books,
+        'manga_books': manga_books,
+        'romance_books': romance_books,
+    }
+    return render(request, 'books/home.html', context)
+
+def get_books_by_genre(genre, max_results=10):
+    api_key = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
+    url = f'https://www.googleapis.com/books/v1/volumes?q=subject:{genre}&maxResults={max_results}&key={api_key}'
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        books = []
+        if 'items' in data:
+            for item in data['items']:
+                book = {
+                    'id': item['id'],
+                    'title': item['volumeInfo'].get('title', 'Без названия'),
+                    'authors': ', '.join(item['volumeInfo'].get('authors', ['Неизвестные авторы'])),
+                    'publisher': item['volumeInfo'].get('publisher', 'Не указан'),
+                    'page_count': item['volumeInfo'].get('pageCount', 0),
+                    'published_date': item['volumeInfo'].get('publishedDate', 'Не указан'),
+                    'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', ''),
+                }
+                books.append(book)
+        return books
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка при запросе к API: {e}")
+        return []
+
 
 def search(request):
     query = request.GET.get('q', '')
@@ -54,7 +98,6 @@ def book_detail(request, book_id):
         return render(request, 'books/book_detail.html', {'book': book_data})
     else:
         return render(request, 'books/404.html', {'message': 'Книга не найдена'})
-
 class RegisterView(FormView):
     template_name = 'books/register.html'
     form_class = RegisterForm
