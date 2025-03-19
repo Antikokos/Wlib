@@ -1,3 +1,7 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -5,21 +9,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль пользователя</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #1d1f21;
-            color: #f5f5f5;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #1d1f21;
+            color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         .container {
             width: 80%;
-            margin: 20px auto;
+            margin: 80px auto 20px;
             background: #2c2f33;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            flex: 1;
         }
 
         .profile {
@@ -62,22 +74,39 @@
             background: #a3126b;
         }
 
-        .home-icon {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            color: #C71585;
-            cursor: pointer;
+        .tabs {
+            display: flex;
+            margin-top: 20px;
+            border-bottom: 2px solid #C71585;
         }
 
-        .home-icon:hover {
-            color: #a3126b;
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #C71585;
+            background: #2c2f33;
+            color: #f5f5f5;
+        }
+
+        .tab.active {
+            background: #C71585;
+            color: white;
+        }
+
+        .content {
+            display: none;
+            padding: 20px;
+            color: #f5f5f5;
+        }
+
+        .content.active {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="home-icon" onclick="location.href='{% url 'home' %}'">&#8962;</div>
     <div class="container">
         <div class="profile">
             <div class="avatar">🍔</div>
@@ -87,6 +116,34 @@
                 <button onclick="location.href='{% url 'logout' %}'">Выйти</button>
             </div>
         </div>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab(0)">Прочитано</div>
+            <div class="tab" onclick="switchTab(1)">Читаю</div>
+            <div class="tab" onclick="switchTab(2)">В планах</div>
+        </div>
+        <div class="content active" id="tab-0">
+            <h3>Прочитанные книги</h3>
+            <p>Список книг, которые пользователь уже прочитал.</p>
+        </div>
+        <div class="content" id="tab-1">
+            <h3>Сейчас читаю</h3>
+            <p>Список книг, которые пользователь читает в данный момент.</p>
+        </div>
+        <div class="content" id="tab-2">
+            <h3>Планы на чтение</h3>
+            <p>Список книг, которые пользователь собирается прочитать.</p>
+        </div>
     </div>
+    <script>
+        function switchTab(index) {
+            let tabs = document.querySelectorAll('.tab');
+            let contents = document.querySelectorAll('.content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            tabs[index].classList.add('active');
+            contents[index].classList.add('active');
+        }
+    </script>
 </body>
 </html>
+{% endblock %}
