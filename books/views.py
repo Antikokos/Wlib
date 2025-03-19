@@ -64,9 +64,6 @@ class RegisterView(FormView):
         form.save()
         return super().form_valid(form)
 
-def login(request):
-    return render(request, 'books/login.html')
-
 @login_required
 
 def profile(request):
