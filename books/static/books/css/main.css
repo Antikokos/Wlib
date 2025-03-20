@@ -230,9 +230,3 @@ h1, h2, h3 {
     text-decoration: none; /* Убираем подчеркивание при наведении */
     color: inherit; /* Наследуем цвет текста при наведении */
 }
-
-/* Стили для пагинации Swiper */
-.swiper-pagination {
-    position: relative;
-    margin-top: 10px;
-}

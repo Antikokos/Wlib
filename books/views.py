@@ -28,7 +28,7 @@ def home(request):
     }
     return render(request, 'books/home.html', context)
 
-def get_books_by_genre(genre, max_results=10):
+def get_books_by_genre(genre, max_results=40):
     api_key = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
     url = f'https://www.googleapis.com/books/v1/volumes?q=subject:{genre}&maxResults={max_results}&key={api_key}'
     try:

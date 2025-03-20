@@ -68,3 +68,25 @@ function getRandomItems(arr, count) {
 genres.forEach(genre => {
     fetchRandomBooks(genre, genre);
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search-txt');
+
+    // это чтобы поисковая строка была нормис
+    searchInput.focus();
+
+    searchInput.addEventListener('input', function() {
+        if (searchInput.value !== '') {
+            searchInput.style.color = 'white';
+            searchInput.style.backgroundColor = '#1d1f21';
+        } else {
+            searchInput.style.color = '';
+            searchInput.style.backgroundColor = '';
+        }
+    });
+
+
+    setTimeout(function() {
+        searchInput.focus();
+    }, 100);
+});
