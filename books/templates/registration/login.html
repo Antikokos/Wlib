@@ -6,225 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход на сайт</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* Общие стили */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #1d1f21;
-            color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        /* Оверлей для модального окна */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Модальное окно */
-        .modal {
-            background-color: #2c2f33;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            width: 450px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        /* Логотип и название сайта */
-        .logo-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .logo {
-            width: 200px;
-            height: auto;
-            margin-bottom: 10px;
-        }
-
-        .site-name {
-            font-size: 28px;
-            color: #C71585;
-            margin: 0;
-        }
-
-        /* Заголовок модального окна */
-        .modal-title {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #fff;
-            transition: all 0.3s ease;
-        }
-
-        /* Социальные кнопки */
-        .social-login {
-            margin-bottom: 20px;
-        }
-
-        .social-login p {
-            color: #fff;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .social-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .social-button {
-            width: 60px;
-            height: 60px;
-            border: none;
-            border-radius: 50%;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .social-button.vk {
-            background-color: #3b5998;
-        }
-
-        .social-button.google {
-            background-color: #dd4b39;
-        }
-
-        .social-button.yandex{
-            background-color: #ffea00;
-        }
-
-        .social-button:hover {
-            transform: scale(1.1);
-        }
-
-        /* Поля ввода */
-        .input-group {
-            position: relative;
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .input-group input {
-            width: 95%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #C71585;
-            background-color: #333;
-            color: #f5f5f5;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        .input-group input:focus {
-            border-color: #C71585;
-            outline: none;
-        }
-
-        .input-group input::placeholder {
-            color: #bbb;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .toggle-password:hover {
-            color: #C71585;
-        }
-
-        /* Кнопка отправки формы */
-        .submit-button {
-            width: 100%;
-            padding: 12px;
-            background-color: #C71585;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .submit-button:hover {
-            background-color: #a3126b;
-            transform: scale(1.05);
-        }
-
-        /* Сообщение об ошибке */
-        .error-message {
-            color: #ff4c4c;
-            font-size: 14px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        /* Ссылки */
-        .links {
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .links a {
-            color: #C71585;
-            text-decoration: none;
-            margin: 5px;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .links a:hover {
-            color: #a3126b;
-            text-decoration: underline;
-        }
-
-        /* Анимация для переключения между входом и регистрацией */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'books/css/register.css' %}">
 </head>
 <body>
     <div class="modal-overlay">
         <div class="modal">
             <!-- Логотип и название сайта -->
             <div class="logo-container">
-                <img class="logo" src="{% static 'books/img/logo.svg' %}" alt="Логотип" style="width: 200px;">
+                <a href="{% url 'home' %}" class="logo-link">
+                    <img class="logo" src="{% static 'books/img/logo.svg' %}" alt="Логотип">
+                </a>
             </div>
 
             <!-- Заголовок входа -->
@@ -241,14 +32,18 @@
             </div>
 
             <!-- Форма входа -->
-            <form method="post" id="auth-form">
+            <form method="post" id="login-form">
                 {% csrf_token %}
                 <div class="input-group fade-in">
-                    <input type="text" name="username" id="username" placeholder="Имя пользователя" required>
+                    <input type="text" name="username" id="login-username" placeholder="Имя пользователя" required>
+                    <div class="error-message" id="username-error"></div>
+                    <i class="fas fa-exclamation-circle error-icon"></i>
                 </div>
                 <div class="input-group fade-in">
-                    <input type="password" name="password" id="password" placeholder="Пароль" required>
-                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password')"><i class="fas fa-eye"></i></button>
+                    <input type="password" name="password" id="login-password" placeholder="Пароль" required>
+                    <button type="button" class="toggle-password" data-target="login-password"><i class="fas fa-eye"></i></button>
+                    <div class="error-message" id="password-error"></div>
+                    <i class="fas fa-exclamation-circle error-icon"></i>
                 </div>
                 {{ form.errors }}
                 <button type="submit" class="submit-button fade-in">Войти</button>
@@ -256,37 +51,39 @@
 
             <!-- Ссылки для перехода на страницу регистрации и восстановления пароля -->
             <div class="links">
-                <a href="{% url 'register' %}">Нет аккаунта? Зарегистрироваться!</a>
+                <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться!</a></p>
                 <a href="#" onclick="handleForgotPassword()">Забыли пароль?</a>
             </div>
         </div>
     </div>
 
+    <script src="{% static 'books/js/register.js' %}"></script>
     <script>
-        // Переключение видимости пароля
-        function togglePasswordVisibility(inputId) {
-            const input = document.getElementById(inputId);
-            const icon = input.nextElementSibling.querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
-        // Обработка социальной авторизации
-        function handleSocialAuth(provider) {
-            alert(`Быстрый вход через ${provider} в разработке`);
-        }
-
         // Обработка "Забыли пароль?"
         function handleForgotPassword() {
             alert('Функция восстановления пароля в разработке');
         }
+
+        // Инициализация для страницы входа
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработчики для кнопок показа пароля
+            document.querySelectorAll('.toggle-password').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const inputId = this.getAttribute('data-target');
+                    togglePasswordVisibility(inputId);
+                });
+            });
+
+            // Базовая валидация формы входа
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // Здесь можно добавить валидацию для входа
+                    this.submit();
+                });
+            }
+        });
     </script>
 </body>
 </html>
