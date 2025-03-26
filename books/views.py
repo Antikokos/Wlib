@@ -1,24 +1,17 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-
-import requests
-from .forms import RegisterForm
-from django.views.generic.edit import FormView
-from django.urls import reverse_lazy
-
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
-from django.contrib.auth.decorators import login_required
-import json
-from .models import UserBook  # Import the UserBook model
-
-from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
+from django.urls import reverse_lazy
+from django.views.generic.edit import FormView
+
 import requests
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
+import json
+
+from .forms import RegisterForm
+from .models import UserBook
+
 
 def home(request):
     fantasy_books = get_books_by_genre('fantasy')
