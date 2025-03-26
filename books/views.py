@@ -5,13 +5,10 @@ from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse, Http404
 from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
-from django.conf import settings
 from django.core.cache import cache
-from django.utils.decorators import method_decorator
 
 import requests
 import json
-import random
 import logging
 
 from .forms import RegisterForm
@@ -19,106 +16,61 @@ from .models import UserBook
 
 logger = logging.getLogger(__name__)
 
-# Настройки API (лучше вынести в settings.py)
-API_KEYS = [
-    'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA',
-    'AIzaSyBQ3aJhA7Q5hZ5Q5hZ5Q5hZ5Q5hZ5Q5hZ5',
-    'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eB',
-    'AIzaSyBzihVeBYzNjUjj-o-7DJCucdcbgj1wuU4'
-]
+# Новый API ключ
+API_KEY = 'AIzaSyBzihVeBYzNjUjj-o-7DJCucdcbgj1wuU4'
+# Старый ключ (закомментирован)
+# API_KEY_OLD = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
+
 DEFAULT_BOOK_COVER = '/static/books/images/default_book_cover.jpg'
 API_TIMEOUT = 10  # секунд
-CACHE_TIMEOUT = 86400  # 24 часа для кэша
 
 
-def get_api_key():
-    """Возвращает случайный рабочий API ключ"""
-    for key in random.sample(API_KEYS, len(API_KEYS)):
-        # Простая проверка ключа (можно расширить)
-        test_url = f'https://www.googleapis.com/books/v1/volumes?q=test&maxResults=1&key={key}'
-        try:
-            response = requests.get(test_url, timeout=5)
-            if response.status_code == 200:
-                return key
-        except requests.RequestException:
-            continue
-    return None  # Если ни один ключ не работает
+def get_books_by_genre(genre, max_results=40):
+    """Получает книги по жанру с кэшированием"""
+    cache_key = f'books_{genre}_{max_results}'
+    cached_data = cache.get(cache_key)
 
+    if cached_data:
+        return cached_data
 
-def fetch_book_data(book_id):
-    """Получает данные книги из API с обработкой ошибок"""
-    api_key = get_api_key()
-    if not api_key:
-        logger.error("No working API keys available")
-        return None
+    url = f'https://www.googleapis.com/books/v1/volumes?q=subject:{genre}&maxResults={max_results}&key={API_KEY}'
 
-    url = f'https://www.googleapis.com/books/v1/volumes/{book_id}?key={api_key}'
     try:
         response = requests.get(url, timeout=API_TIMEOUT)
         response.raise_for_status()
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        if response.status_code == 404:
-            logger.info(f"Book not found: {book_id}")
-        else:
-            logger.warning(f"API error for book {book_id}: {e}")
+        data = response.json()
+        books = []
+
+        if 'items' in data:
+            for item in data['items']:
+                book = {
+                    'id': item['id'],
+                    'title': item['volumeInfo'].get('title', 'Без названия'),
+                    'authors': ', '.join(item['volumeInfo'].get('authors', ['Неизвестные авторы'])),
+                    'publisher': item['volumeInfo'].get('publisher', 'Не указан'),
+                    'page_count': item['volumeInfo'].get('pageCount', 0),
+                    'published_date': item['volumeInfo'].get('publishedDate', 'Не указан'),
+                    'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
+                }
+                books.append(book)
+
+        # Кэшируем на 1 час
+        cache.set(cache_key, books, 3600)
+        return books
+
     except requests.exceptions.RequestException as e:
-        logger.error(f"Request failed for book {book_id}: {e}")
-    return None
-
-
-def parse_book_data(book_json, book_id):
-    """Парсит данные книги из JSON ответа"""
-    if not book_json:
-        return None
-
-    volume_info = book_json.get('volumeInfo', {})
-    return {
-        'id': book_id,
-        'title': volume_info.get('title', 'Без названия'),
-        'authors': ', '.join(volume_info.get('authors', ['Неизвестные авторы'])),
-        'publisher': volume_info.get('publisher', 'Не указан'),
-        'page_count': volume_info.get('pageCount', 0),
-        'published_date': volume_info.get('publishedDate', 'Не указан'),
-        'thumbnail': volume_info.get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
-        'description': volume_info.get('description', 'Описание отсутствует'),
-    }
+        logger.error(f"Ошибка при запросе книг по жанру {genre}: {e}")
+        return []
 
 
 def home(request):
     """Главная страница с книгами по жанрам"""
-    genres = {
-        'fantasy_books': 'fantasy',
-        'detective_books': 'detective',
-        'manga_books': 'manga',
-        'romance_books': 'romance'
+    context = {
+        'fantasy_books': get_books_by_genre('fantasy'),
+        'detective_books': get_books_by_genre('detective'),
+        'manga_books': get_books_by_genre('manga'),
+        'romance_books': get_books_by_genre('romance'),
     }
-
-    context = {}
-    for key, genre in genres.items():
-        cache_key = f'home_{genre}_books'
-        books = cache.get(cache_key)
-
-        if not books:
-            books = []
-            api_key = get_api_key()
-            if api_key:
-                url = f'https://www.googleapis.com/books/v1/volumes?q=subject:{genre}&maxResults=40&key={api_key}'
-                try:
-                    response = requests.get(url, timeout=API_TIMEOUT)
-                    if response.status_code == 200:
-                        data = response.json()
-                        books = [
-                            parse_book_data(item, item['id'])
-                            for item in data.get('items', [])
-                            if parse_book_data(item, item['id'])
-                        ]
-                        cache.set(cache_key, books, CACHE_TIMEOUT)
-                except requests.RequestException as e:
-                    logger.error(f"Error fetching {genre} books: {e}")
-
-        context[key] = books or []
-
     return render(request, 'books/home.html', context)
 
 
@@ -129,62 +81,80 @@ def search(request):
         return redirect('home')
 
     cache_key = f'search_{query}'
-    books = cache.get(cache_key)
+    cached_data = cache.get(cache_key)
 
-    if books is None:
+    if cached_data:
+        return render(request, 'books/search.html', {'books': cached_data, 'query': query})
+
+    url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={API_KEY}'
+
+    try:
+        response = requests.get(url, timeout=API_TIMEOUT)
+        response.raise_for_status()
+        data = response.json()
         books = []
-        api_key = get_api_key()
-        if api_key:
-            url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={api_key}'
-            try:
-                response = requests.get(url, timeout=API_TIMEOUT)
-                if response.status_code == 200:
-                    data = response.json()
-                    books = [
-                        parse_book_data(item, item['id'])
-                        for item in data.get('items', [])
-                        if parse_book_data(item, item['id'])
-                    ]
-                    cache.set(cache_key, books, 1800)  # 30 минут кэша
-            except requests.RequestException as e:
-                logger.error(f"Search error for '{query}': {e}")
 
-    return render(request, 'books/search.html', {
-        'books': books,
-        'query': query,
-        'no_results': not books
-    })
+        if 'items' in data:
+            for item in data['items']:
+                book = {
+                    'id': item['id'],
+                    'title': item['volumeInfo'].get('title', 'Без названия'),
+                    'authors': ', '.join(item['volumeInfo'].get('authors', ['Неизвестные авторы'])),
+                    'publisher': item['volumeInfo'].get('publisher', 'Не указан'),
+                    'page_count': item['volumeInfo'].get('pageCount', 0),
+                    'published_date': item['volumeInfo'].get('publishedDate', 'Не указан'),
+                    'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
+                }
+                books.append(book)
+
+        # Кэшируем результаты поиска на 30 минут
+        cache.set(cache_key, books, 1800)
+        return render(request, 'books/search.html', {'books': books, 'query': query})
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Ошибка при поиске книг: {e}")
+        return render(request, 'books/search.html', {'books': [], 'query': query})
 
 
 def book_detail(request, book_id):
     """Детальная страница книги"""
     cache_key = f'book_{book_id}'
-    book = cache.get(cache_key)
+    cached_data = cache.get(cache_key)
 
-    if not book:
-        book_json = fetch_book_data(book_id)
-        book = parse_book_data(book_json, book_id)
+    if cached_data:
+        return render(request, 'books/book_detail.html', {'book': cached_data})
 
-        if book:
-            cache.set(cache_key, book, CACHE_TIMEOUT)
-        else:
-            # Резервный вариант - минимальные данные о книге
-            book = {
-                'id': book_id,
-                'title': 'Информация о книге временно недоступна',
-                'authors': 'Неизвестные авторы',
-                'publisher': 'Не указан',
-                'page_count': 0,
-                'published_date': 'Не указан',
-                'thumbnail': DEFAULT_BOOK_COVER,
-                'description': 'Приносим извинения, но в данный момент мы не можем загрузить информацию об этой книге. Пожалуйста, попробуйте позже.',
-            }
-            return render(request, 'books/book_detail.html', {'book': book}, status=503)
+    url = f'https://www.googleapis.com/books/v1/volumes/{book_id}?key={API_KEY}'
 
-    return render(request, 'books/book_detail.html', {'book': book})
+    try:
+        response = requests.get(url, timeout=API_TIMEOUT)
+
+        if response.status_code == 404:
+            raise Http404("Книга не найдена")
+
+        response.raise_for_status()
+        book = response.json()
+
+        book_data = {
+            'id': book['id'],
+            'title': book['volumeInfo'].get('title', 'Без названия'),
+            'authors': ', '.join(book['volumeInfo'].get('authors', ['Неизвестные авторы'])),
+            'publisher': book['volumeInfo'].get('publisher', 'Не указан'),
+            'page_count': book['volumeInfo'].get('pageCount', 0),
+            'published_date': book['volumeInfo'].get('publishedDate', 'Не указан'),
+            'thumbnail': book['volumeInfo'].get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
+            'description': book['volumeInfo'].get('description', 'Описание отсутствует'),
+        }
+
+        # Кэшируем данные книги на 24 часа
+        cache.set(cache_key, book_data, 86400)
+        return render(request, 'books/book_detail.html', {'book': book_data})
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Ошибка при получении деталей книги {book_id}: {e}")
+        raise Http404("Не удалось загрузить информацию о книге")
 
 
-@method_decorator(csrf_protect, name='dispatch')
 class RegisterView(FormView):
     """Регистрация пользователя"""
     template_name = 'books/register.html'
@@ -201,7 +171,7 @@ class RegisterView(FormView):
 def update_book_status(request):
     """Обновление статуса книги для пользователя"""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'message': 'Метод не разрешен'}, status=405)
+        return JsonResponse({'success': False, 'message': 'Неверный метод запроса'}, status=405)
 
     try:
         data = json.loads(request.body)
@@ -212,17 +182,19 @@ def update_book_status(request):
         if not book_id or not status:
             return JsonResponse({'success': False, 'message': 'Недостаточно данных'}, status=400)
 
+        # Обновляем или создаем запись
         UserBook.objects.update_or_create(
             user=request.user,
             book_id=book_id,
             defaults={'status': status, 'progress': progress}
         )
+
         return JsonResponse({'success': True, 'message': 'Статус обновлен'})
 
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'message': 'Неверный формат данных'}, status=400)
     except Exception as e:
-        logger.error(f"Error updating book status: {e}")
+        logger.error(f"Ошибка при обновлении статуса книги: {e}")
         return JsonResponse({'success': False, 'message': 'Внутренняя ошибка сервера'}, status=500)
 
 
@@ -233,30 +205,39 @@ def profile(request):
 
     books_data = []
     for user_book in user_books:
-        book_data = cache.get(f'profile_book_{user_book.book_id}')
+        cache_key = f'profile_book_{user_book.book_id}'
+        book_data = cache.get(cache_key)
 
         if not book_data:
-            book_json = fetch_book_data(user_book.book_id)
-            book_data = parse_book_data(book_json, user_book.book_id)
+            url = f'https://www.googleapis.com/books/v1/volumes/{user_book.book_id}?key={API_KEY}'
 
-            if book_data:
-                book_data.update({
-                    'status': user_book.status,
-                    'progress': user_book.progress
-                })
-                cache.set(f'profile_book_{user_book.book_id}', book_data, CACHE_TIMEOUT)
+            try:
+                response = requests.get(url, timeout=API_TIMEOUT)
+                if response.status_code == 200:
+                    book = response.json()
+                    book_data = {
+                        'id': book['id'],
+                        'title': book['volumeInfo'].get('title', 'Без названия'),
+                        'authors': ', '.join(book['volumeInfo'].get('authors', ['Неизвестные авторы'])),
+                        'thumbnail': book['volumeInfo'].get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
+                        'status': user_book.status,
+                        'progress': user_book.progress,
+                    }
+                    cache.set(cache_key, book_data, 86400)
+            except requests.exceptions.RequestException:
+                continue
 
         if book_data:
             books_data.append(book_data)
 
-    # Группировка по статусам
-    status_groups = {
-        'read': [b for b in books_data if b['status'] == 'read'],
-        'reading': [b for b in books_data if b['status'] == 'reading'],
-        'want_to_read': [b for b in books_data if b['status'] == 'want-to-read'],
+    # Группируем книги по статусам
+    books_by_status = {
+        'read_books': [b for b in books_data if b['status'] == 'read'],
+        'reading_books': [b for b in books_data if b['status'] == 'reading'],
+        'want_to_read_books': [b for b in books_data if b['status'] == 'want-to-read'],
     }
 
-    return render(request, 'books/profile.html', status_groups)
+    return render(request, 'books/profile.html', books_by_status)
 
 
 def logout_view(request):
