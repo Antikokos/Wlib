@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
 {% block title %}
-{{book.title}}
+{{ book.title }}
 {% endblock %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="../../static/books/css/book_detail.css">
+    <link rel="stylesheet" href="{% static 'books/css/book_detail.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<!-- Добавили data-book-id -->
+<div class="container" data-book-id="{{ book.id }}">
     <div class="book-container">
         <div class="book-cover-container">
             <img id="book-cover" src="{{ book.thumbnail }}" alt="Обложка книги">
@@ -36,14 +36,14 @@
             <div class="add-button-container">
                 <button class="add-button" onclick="toggleStatusButtons()">Добавить</button>
                 <div class="status-buttons" id="status-buttons">
-                    <button class="reading-button" onclick="updateStatus('reading')">Читаю</button>
-                    <button class="want-to-read-button" onclick="updateStatus('want-to-read')">В планах</button>
-                    <button class="read-button" onclick="updateStatus('read')">Прочитано</button>
+                    <button class="reading-button" data-status="reading">Читаю</button>
+                    <button class="want-to-read-button" data-status="want-to-read">В планах</button>
+                    <button class="read-button" data-status="read">Прочитано</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script src="../../static/books/js/book_detail.js"></script>
+<script src="{% static 'books/js/book_detail.js' %}"></script>
 {% endblock %}

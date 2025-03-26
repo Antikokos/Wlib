@@ -15,4 +15,5 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('profile/', views.profile, name='profile'),
     path('logout/', views.logout_view, name='logout'),
+    path('update_book_status/', views.update_book_status, name='update_book_status')
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
