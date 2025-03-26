@@ -17,7 +17,7 @@ function fetchBookData() {
             updateProgress(0); // Инициализация прогресса на 0%
         })
         .catch(error => console.error('Ошибка загрузки данных книги:', error));
-}
+}   
 
 // Переключение видимости кнопок статуса
 function toggleStatusButtons() {
@@ -25,52 +25,53 @@ function toggleStatusButtons() {
     buttons.style.display = buttons.style.display === 'block' ? 'none' : 'block';
 }
 
-// Обновление статуса книги (добавление в профиль пользователя)
-function updateStatus(status) {
-    const bookId = "{{ book.id }}"; // ID книги берется из шаблона
+document.addEventListener("DOMContentLoaded", function () {
+    setupStatusButtons();
+});
 
-    console.log('Отправка запроса:', { book_id: bookId, status: status });
-
-    fetch(`/update_book_status/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken') // CSRF-токен для защиты
-        },
-        body: JSON.stringify({
-            book_id: bookId,
-            status: status
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            console.error('Ошибка HTTP:', response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Ответ сервера:', data);
-        if (data.success) {
-            alert('Книга успешно добавлена!');
-        } else {
-            alert('Ошибка при добавлении книги.');
-        }
-    })
-    .catch(error => console.error('Ошибка при отправке запроса:', error));
+function setupStatusButtons() {
+    const buttons = document.querySelectorAll(".status-buttons button");
+    buttons.forEach(button => {
+        button.addEventListener("click", function () {
+            const status = this.getAttribute("data-status");
+            updateStatus(status);
+        });
+    });
 }
 
-// Функция для получения CSRF-токена из cookies
+function updateStatus(status) {
+    const bookContainer = document.querySelector(".container");
+    const bookId = bookContainer.getAttribute("data-book-id"); // Получаем book_id из HTML
+
+    fetch("/update_book_status/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken") // CSRF-токен
+        },
+        body: JSON.stringify({ book_id: bookId, status: status })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Книга успешно добавлена в категорию: " + status);
+        } else {
+            alert("Ошибка: " + data.message);
+        }
+    })
+    .catch(error => console.error("Ошибка при отправке запроса:", error));
+}
+
+// Получаем CSRF-токен
 function getCookie(name) {
     let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+    if (document.cookie && document.cookie !== "") {
+        document.cookie.split(";").forEach(cookie => {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + "=")) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
             }
-        }
+        });
     }
     return cookieValue;
 }

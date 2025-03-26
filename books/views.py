@@ -8,7 +8,7 @@ from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
 
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 import json
 from .models import UserBook  # Import the UserBook model
@@ -70,8 +70,10 @@ class RegisterView(FormView):
         form.save()
         return super().form_valid(form)
 
+
+
 @login_required
-@csrf_exempt
+@csrf_protect  # Вместо @csrf_exempt, потому что @login_required уже защищает от внешних запросов
 def update_book_status(request):
     if request.method == 'POST':
         try:
@@ -93,6 +95,7 @@ def update_book_status(request):
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
     return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
+
 
 def profile(request):
     api_key = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
