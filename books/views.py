@@ -98,6 +98,7 @@ def book_detail(request, book_id):
         return render(request, 'books/book_detail.html', {'book': book_data})
     else:
         return render(request, 'books/404.html', {'message': 'Книга не найдена'})
+    
 class RegisterView(FormView):
     template_name = 'books/register.html'
     form_class = RegisterForm

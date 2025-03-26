@@ -10,8 +10,8 @@ const ERROR_MESSAGES = {
 const form = document.getElementById('register-form');
 const username = document.getElementById('username');
 const email = document.getElementById('email');
-const password = document.getElementById('password');
-const confirmPassword = document.getElementById('confirm_password');
+const password1 = document.getElementById('password1');  // password1
+const password2 = document.getElementById('password2');  // password2
 
 // Функция переключения видимости пароля
 function togglePasswordVisibility(inputId) {
@@ -64,8 +64,8 @@ function handleSubmit(e) {
     // Очищаем все ошибки перед проверкой
     setError(username);
     setError(email);
-    setError(password);
-    setError(confirmPassword);
+    setError(password1);
+    setError(password2);
 
     // Проверяем поля
     if (!validateUsername(username.value.trim())) {
@@ -78,13 +78,13 @@ function handleSubmit(e) {
         isValid = false;
     }
 
-    if (!validatePassword(password.value.trim())) {
-        setError(password, ERROR_MESSAGES.PASSWORD);
+    if (!validatePassword(password1.value.trim())) {
+        setError(password1, ERROR_MESSAGES.PASSWORD);
         isValid = false;
     }
 
-    if (password.value !== confirmPassword.value) {
-        setError(confirmPassword, ERROR_MESSAGES.CONFIRM_PASSWORD);
+    if (password1.value !== password2.value) {
+        setError(password2, ERROR_MESSAGES.CONFIRM_PASSWORD);
         isValid = false;
     }
 
@@ -94,7 +94,9 @@ function handleSubmit(e) {
             username: username.value,
             email: email.value
         });
-        alert('Регистрация успешна!');
+
+        // Отправляем форму
+        form.submit();  // Этот вызов отправит форму
     } else {
         // Фокус на первое поле с ошибкой
         document.querySelector('.input-group.error input')?.focus();
@@ -113,19 +115,19 @@ function setupLiveValidation() {
             ? ERROR_MESSAGES.EMAIL : '');
     });
 
-    password.addEventListener('input', () => {
-        setError(password, password.value.trim() && !validatePassword(password.value.trim())
+    password1.addEventListener('input', () => {
+        setError(password1, password1.value.trim() && !validatePassword(password1.value.trim())
             ? ERROR_MESSAGES.PASSWORD : '');
 
         // Проверяем подтверждение пароля, если оно уже введено
-        if (confirmPassword.value.trim()) {
-            setError(confirmPassword, password.value !== confirmPassword.value
+        if (password2.value.trim()) {
+            setError(password2, password1.value !== password2.value
                 ? ERROR_MESSAGES.CONFIRM_PASSWORD : '');
         }
     });
 
-    confirmPassword.addEventListener('input', () => {
-        setError(confirmPassword, confirmPassword.value.trim() && password.value !== confirmPassword.value
+    password2.addEventListener('input', () => {
+        setError(password2, password2.value.trim() && password1.value !== password2.value
             ? ERROR_MESSAGES.CONFIRM_PASSWORD : '');
     });
 }

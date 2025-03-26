@@ -48,18 +48,18 @@
                     <i class="fas fa-exclamation-circle error-icon"></i>
                 </div>
                 <div class="input-group fade-in">
-                    <input type="password" name="password" id="password" placeholder="Пароль" required>
-                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password')"><i class="fas fa-eye"></i></button>
+                    <input type="password" name="password1" id="password1" placeholder="Пароль" required>
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password1')"><i class="fas fa-eye"></i></button>
                     <div class="error-message" id="password-error"></div>
                     <i class="fas fa-exclamation-circle error-icon"></i>
                 </div>
                 <div class="input-group fade-in">
-                    <input type="password" name="confirm_password" id="confirm_password" placeholder="Подтвердите пароль" required>
-                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('confirm_password')"><i class="fas fa-eye"></i></button>
+                    <input type="password" name="password2" id="password2" placeholder="Подтвердите пароль" required>
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password2')"><i class="fas fa-eye"></i></button>
                     <div class="error-message" id="confirm-password-error"></div>
                     <i class="fas fa-exclamation-circle error-icon"></i>
-                </div>
-                {{ form.errors }}
+                </div>                
+                <!-- {{ form.errors }} -->
                 <button type="submit" class="submit-button fade-in">Зарегистрироваться</button>
             </form>
 
