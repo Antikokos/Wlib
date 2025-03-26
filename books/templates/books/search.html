@@ -18,7 +18,11 @@
     <div class="search-header">
         <h2 style="width: 70%;" id="result-title">Результаты поиска для "{{ query }}"</h2>
 
+
         <div class="sort-container" id="sort-container">
+            <button class="reverse-button" onclick="reverseBooks()">
+                <i class="fa fa-sync-alt"></i>
+            </button>
             <select class="sort-select" id="sortOption">
                 <option value="pages">Кол-ву страниц</option>
                 <option value="year">Году выхода</option>
@@ -47,4 +51,5 @@
     
 
 <script src="{% static 'books/js/main.js' %}"></script>
+<script src="{% static 'books/js/search.js' %}"></script>
 {% endblock %}
