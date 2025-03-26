@@ -7,38 +7,101 @@
 
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'books/css/book_detail.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
-<!-- Добавили data-book-id -->
 <div class="container" data-book-id="{{ book.id }}">
     <div class="book-container">
-        <div class="book-cover-container">
-            <img id="book-cover" src="{{ book.thumbnail }}" alt="Обложка книги">
-        </div>
-        <div class="book-details">
-            <p id="book-title">{{ book.title }}</p>
-            <p id="book-author">Автор: {{ book.authors }}</p>
-            <p id="book-description">{{ book.description }}</p>
-            <p id="book-publisher">Издательство: {{ book.publisher }}</p>
-            <p id="book-year">Год: {{ book.published_date }}</p>
-            <p id="book-pages">Страниц: {{ book.page_count }}</p>
-
-            <!-- Прогресс-бар -->
-            <div class="progress-bar-container">
-                <p>Прочитано: <span id="book-progress-text">0%</span></p>
-                <div class="progress-bar" id="progress-bar">
-                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
-                </div>
+        <div class="book-cover-section">
+            <div class="book-cover-container">
+                <img id="book-cover" src="{% if book.thumbnail %}{{ book.thumbnail }}{% else %}{% static 'books/images/default_book_cover.jpg' %}{% endif %}" alt="Обложка книги">
             </div>
 
-            <!-- Кнопка "Добавить" и выпадающее меню -->
-            <div class="add-button-container">
-                <button class="add-button" onclick="toggleStatusButtons()">Добавить</button>
+            <div class="book-status-container">
+                <button class="status-main-button" id="status-main-button">
+                    <i class="fas fa-bookmark"></i>
+                    <span id="status-main-text">Добавить в мои книги</span>
+                </button>
                 <div class="status-buttons" id="status-buttons">
-                    <button class="reading-button" data-status="reading">Читаю</button>
-                    <button class="want-to-read-button" data-status="want-to-read">В планах</button>
-                    <button class="read-button" data-status="read">Прочитано</button>
+                    <button class="status-btn reading-button" data-status="reading">
+                        <i class="fas fa-book-open"></i> Читаю
+                    </button>
+                    <button class="status-btn want-to-read-button" data-status="want-to-read">
+                        <i class="fas fa-clock"></i> В планах
+                    </button>
+                    <button class="status-btn read-button" data-status="read">
+                        <i class="fas fa-check-circle"></i> Прочитано
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="book-details">
+            <h1 id="book-title">{{ book.title }}</h1>
+            <p id="book-author">Автор: {{ book.authors|default:"Неизвестно" }}</p>
+
+            <div class="book-description-container">
+    <h3 class="description-title">О книге</h3>
+    <div class="book-description" id="book-description">
+        {{ book.description|striptags|default:"Описание отсутствует." }}
+    </div>
+</div>
+
+            <p id="book-publisher">Издательство: {{ book.publisher|default:"Неизвестно" }}</p>
+            <p id="book-year">Год: {{ book.published_date|default:"Неизвестно" }}</p>
+            <p id="book-pages">Страниц: <span id="total-pages">{{ book.page_count|default:"0" }}</span></p>
+
+            <div class="reading-progress">
+                <h3 class="progress-title">
+                    <i class="fas fa-bookmark progress-icon"></i>
+                    Прогресс чтения
+                </h3>
+
+                <div class="progress-visualization">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-fill" style="width: 0%">
+                                <div class="progress-bar-wave"></div>
+                                <div class="progress-bar-sparkles">
+                                    <div class="sparkle"></div>
+                                    <div class="sparkle"></div>
+                                    <div class="sparkle"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress-percentage" id="progress-text">0%</div>
+                    </div>
+
+                    <div class="pages-display">
+                        <span id="current-page">0</span>
+                        <span class="pages-separator">/</span>
+                        <span id="total-pages-display">{{ book.page_count|default:"0" }}</span>
+                        <span class="pages-label">страниц</span>
+                    </div>
+                </div>
+
+                <div class="progress-controls">
+                    <button class="progress-btn" id="decrease-btn">
+                        <i class="fas fa-minus"></i>
+                    </button>
+
+                    <div class="slider-container">
+                        <input type="range" id="progress-slider" min="0" max="100" value="0" class="progress-slider">
+                        <div class="slider-tooltip" id="slider-tooltip">0%</div>
+                    </div>
+
+                    <button class="progress-btn" id="increase-btn">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <div class="page-input-group">
+                    <input type="number" id="page-input" min="0" max="{{ book.page_count|default:'0' }}"
+                           placeholder="Номер страницы" class="page-input">
+                    <button id="update-pages" class="page-input-btn">
+                        <i class="fas fa-check"></i>
+                    </button>
                 </div>
             </div>
         </div>
