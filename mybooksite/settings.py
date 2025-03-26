@@ -30,8 +30,11 @@ SECRET_KEY = 'django-insecure-e&k))in6o&y6xqbh^waw^n!sn7yueci9eeh1p6*%!^w=_!8&52
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = [
+    'wlib-production.up.railway.app',  # Основной домен на Railway
+    '127.0.0.1',                       # Для локального тестирования
+    'localhost'                        # Для разработки
+]
 
 # Application definition
 
@@ -148,6 +151,6 @@ LOGIN_REDIRECT_URL = reverse_lazy('home')
 CSRF_TRUSTED_ORIGINS = ['https://wlib-production.up.railway.app/.com']
 
 # Обеспечиваем безопасные куки для CSRF
-SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
