@@ -146,3 +146,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = reverse_lazy('home')
 
 CSRF_TRUSTED_ORIGINS = ['https://wlib-production.up.railway.app/.com']
+
+# Обеспечиваем безопасные куки для CSRF
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
