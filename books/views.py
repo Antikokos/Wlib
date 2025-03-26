@@ -57,14 +57,14 @@ def search(request):
     query = request.GET.get('q', '')
     if query:
         api_key = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
-        url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={api_key}'
+        url = f'https://www.googleapis.com/books/v1/volumes?q={query}&maxResults=40&key={api_key}'  # Теперь 40 книг
         response = requests.get(url)
         data = response.json()
         books = []
         if 'items' in data:
             for item in data['items']:
                 book = {
-                    'id': item['id'],  # Добавляем ID книги
+                    'id': item['id'],
                     'title': item['volumeInfo'].get('title', 'Без названия'),
                     'authors': ', '.join(item['volumeInfo'].get('authors', ['Неизвестные авторы'])),
                     'publisher': item['volumeInfo'].get('publisher', 'Не указан'),
@@ -75,7 +75,6 @@ def search(request):
                 books.append(book)
         return render(request, 'books/search.html', {'books': books, 'query': query})
     return redirect('home')
-
 
 def book_detail(request, book_id):
     api_key = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
