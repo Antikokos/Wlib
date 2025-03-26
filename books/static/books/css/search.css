@@ -1,11 +1,5 @@
 .search-header {
     display: flex;
-    justify-content: space-between;
-    padding-top: 20px;
-}
-
-.sort-container {
-    display: flex;
     justify-content: flex-end;
     margin: 20px 0;
     max-height: 100px;
@@ -70,7 +64,7 @@ p {
     justify-content: center;
     width: 100%;
     position: relative;
-    flex-wrap: nowrap;
+    /* flex-wrap: nowrap; */
     transition: margin 0.3s ease;
     scroll-behavior: smooth;
 }
@@ -78,7 +72,7 @@ p {
 .book-card {
     display: flex;
     background-color: #333;
-    padding: 15px 20px; /* Уменьшил верхний/нижний padding */
+    padding: 15px 0px; 
     border-radius: 10px;
     text-align: left;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -87,7 +81,8 @@ p {
     max-width: 100%;
     height: 300px;
     position: relative;
-    flex-shrink: 0;
+    overflow: hidden;
+    /* flex-shrink: 0; */
     align-items: flex-start; /* Добавлено для выравнивания по верху */
 }
 
@@ -96,6 +91,7 @@ p {
 }
 
 .book-image {
+    margin-left: 20px;
     width: 200px;
     height: 280px;
     background-size: cover;
@@ -117,11 +113,38 @@ p {
 
 .book-info h3 {
     font-size: 20px;
-    margin: 0 0 10px 0; /* Улучшенные отступы */
+    margin: 0 0 10px 0; 
     padding-top: 0;
 }
 
 .book-info p {
     font-size: 16px;
     margin: 5px 0; /* Стандартные отступы */
+}
+
+
+.load-more-container {
+    margin: 30px 0;
+    text-align: center;
+}
+
+#load-more {
+    padding: 12px 25px;
+    font-size: 16px;
+    background-color: #C71585;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#load-more:hover {
+    background-color: #a3126b;
+}
+
+#books-count {
+    margin-left: 15px;
+    font-size: 14px;
+    color: #bdc1c6;
 }

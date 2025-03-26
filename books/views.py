@@ -57,7 +57,7 @@ def search(request):
     query = request.GET.get('q', '')
     if query:
         api_key = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
-        url = f'https://www.googleapis.com/books/v1/volumes?q={query}&maxResults=40&key={api_key}'  # Теперь 40 книг
+        url = f'https://www.googleapis.com/books/v1/volumes?q={query}&maxResults=40&key={api_key}'
         response = requests.get(url)
         data = response.json()
         books = []
@@ -73,7 +73,13 @@ def search(request):
                     'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', ''),
                 }
                 books.append(book)
-        return render(request, 'books/search.html', {'books': books, 'query': query})
+        
+        # Передаем все книги в шаблон
+        return render(request, 'books/search.html', {
+            'books': books,
+            'query': query,
+            'total_books': len(books)
+        })
     return redirect('home')
 
 def book_detail(request, book_id):

@@ -1,3 +1,38 @@
+// Пагинация - Показать еще
+document.addEventListener("DOMContentLoaded", function() {
+    const loadMoreBtn = document.getElementById('load-more');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            const hiddenBooks = document.getElementById('hidden-books');
+            const bookContainer = document.getElementById('book-container');
+            const booksCount = document.getElementById('books-count');
+            
+            // Берем первые 10 скрытых книг
+            const booksToShow = Array.from(hiddenBooks.children).slice(0, 10);
+            
+            if (booksToShow.length > 0) {
+                // Добавляем их в основной контейнер
+                booksToShow.forEach(book => {
+                    bookContainer.appendChild(book);
+                });
+                
+                // Обновляем счетчик
+                const currentShown = bookContainer.children.length;
+                const totalBooks = parseInt('{{ total_books }}');
+                booksCount.textContent = `${currentShown}/40`;
+                
+                // Если больше нечего показывать - скрываем кнопку
+                if (hiddenBooks.children.length === 0) {
+                    loadMoreBtn.style.display = 'none';
+                }
+            }
+        });
+    }
+    
+    // Остальной ваш код...
+});
+
+
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('.book-info p').forEach(p => {
         if (p.textContent.includes("Год выхода:")) {
