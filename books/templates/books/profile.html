@@ -123,15 +123,42 @@
         </div>
         <div class="content active" id="tab-0">
             <h3>Прочитанные книги</h3>
-            <p>Список книг, которые пользователь уже прочитал.</p>
+            <div class="book-list">
+                {% for book in read_books %}
+                <div class="book-item">
+                    <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
+                    <p>{{ book.title }}</p>
+                    <p>{{ book.authors }}</p>
+                </div>
+                {% endfor %}
+            </div>
         </div>
+        
         <div class="content" id="tab-1">
             <h3>Сейчас читаю</h3>
-            <p>Список книг, которые пользователь читает в данный момент.</p>
+            <div class="book-list">
+                {% for book in reading_books %}
+                <div class="book-item">
+                    <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
+                    <p>{{ book.title }}</p>
+                    <p>{{ book.authors }}</p>
+                    <p>Прогресс: {{ book.progress }}%</p>
+                </div>
+                {% endfor %}
+            </div>
         </div>
+        
         <div class="content" id="tab-2">
             <h3>Планы на чтение</h3>
-            <p>Список книг, которые пользователь собирается прочитать.</p>
+            <div class="book-list">
+                {% for book in want_to_read_books %}
+                <div class="book-item">
+                    <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
+                    <p>{{ book.title }}</p>
+                    <p>{{ book.authors }}</p>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
     <script>

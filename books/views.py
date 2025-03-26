@@ -7,6 +7,12 @@ from .forms import RegisterForm
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+import json
+from .models import UserBook  # Import the UserBook model
+
 def home(request):
     return render(request, 'books/home.html')
 
@@ -65,9 +71,59 @@ class RegisterView(FormView):
         return super().form_valid(form)
 
 @login_required
+@csrf_exempt
+def update_book_status(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            book_id = data.get('book_id')
+            status = data.get('status')
+
+            if not book_id or not status:
+                return JsonResponse({'success': False, 'message': 'Недостаточно данных'})
+
+            # Получаем или создаем запись для пользователя и книги
+            user_book, created = UserBook.objects.update_or_create(
+                user=request.user,
+                book_id=book_id,
+                defaults={'status': status}
+            )
+
+            return JsonResponse({'success': True, 'message': 'Статус обновлен'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
 
 def profile(request):
-    return render(request, 'books/profile.html')
+    api_key = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
+    user_books = UserBook.objects.filter(user=request.user)
+
+    books_data = []
+    for user_book in user_books:
+        url = f'https://www.googleapis.com/books/v1/volumes/{user_book.book_id}?key={api_key}'
+        response = requests.get(url)
+        if response.status_code == 200:
+            book = response.json()
+            book_data = {
+                'id': book['id'],
+                'title': book['volumeInfo'].get('title', 'Без названия'),
+                'authors': ', '.join(book['volumeInfo'].get('authors', ['Неизвестные авторы'])),
+                'thumbnail': book['volumeInfo'].get('imageLinks', {}).get('thumbnail', ''),
+                'status': user_book.status,
+                'progress': user_book.progress,
+            }
+            books_data.append(book_data)
+
+    # Разделяем книги по статусам
+    read_books = [book for book in books_data if book['status'] == 'read']
+    reading_books = [book for book in books_data if book['status'] == 'reading']
+    want_to_read_books = [book for book in books_data if book['status'] == 'want-to-read']
+
+    return render(request, 'books/profile.html', {
+        'read_books': read_books,
+        'reading_books': reading_books,
+        'want_to_read_books': want_to_read_books,
+    })
 
 def logout_view(request):
     logout(request)
