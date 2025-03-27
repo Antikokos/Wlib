@@ -30,7 +30,11 @@ SECRET_KEY = 'django-insecure-e&k))in6o&y6xqbh^waw^n!sn7yueci9eeh1p6*%!^w=_!8&52
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['wlib-production.up.railway.app', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'wlib-production.up.railway.app',
+    '127.0.0.1',
+    'localhost',
+]
 
 
 # Application definition
@@ -145,12 +149,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Redirect to home after login
 LOGIN_REDIRECT_URL = reverse_lazy('home')
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://wlib-production.up.railway.app",
-    "https://www.wlib-production.up.railway.app",
-]
 # Security settings
-SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True  # Эта строка здесь
 CSRF_TRUSTED_ORIGINS = [
