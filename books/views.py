@@ -18,6 +18,7 @@ API_KEY = 'AIzaSyBzihVeBYzNjUjj-o-7DJCucdcbgj1wuU4'
 DEFAULT_BOOK_COVER = '/static/books/images/default_book_cover.jpg'
 API_TIMEOUT = 10
 
+
 def get_books_by_genre(genre, max_results=40):
     """Получает книги по жанру с кэшированием"""
     cache_key = f'books_{genre}_{max_results}'
