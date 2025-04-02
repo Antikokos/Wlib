@@ -1,19 +1,141 @@
-// Сообщения об ошибках
-const ERROR_MESSAGES = {
-    USERNAME: '3-30 символов (a-z, 0-9, _-)',
-    EMAIL: 'Некорректный email',
-    PASSWORD: '8-50 символов (A-Z, a-z, 0-9)',
-    CONFIRM_PASSWORD: 'Пароли не совпадают'
+// Конфигурация
+const CONFIG = {
+    MIN_USERNAME_LENGTH: 3,
+    MAX_USERNAME_LENGTH: 30,
+    MIN_PASSWORD_LENGTH: 8,
+    MAX_PASSWORD_LENGTH: 50,
+    MAX_EMAIL_LENGTH: 254
 };
 
-// Получаем элементы формы
+// Списки доменов
+const POPULAR_DOMAINS = [
+    'gmail.com', 'mail.ru', 'yandex.ru', 'yahoo.com',
+    'outlook.com', 'hotmail.com', 'icloud.com'
+];
+
+const DISPOSABLE_DOMAINS = [
+    'tempmail.com', '10minutemail.com', 'mailinator.com',
+    'guerrillamail.com', 'yopmail.com', 'trashmail.com'
+];
+
+// Элементы формы
 const form = document.getElementById('register-form');
 const username = document.getElementById('username');
 const email = document.getElementById('email');
-const password1 = document.getElementById('password1');  // password1
-const password2 = document.getElementById('password2');  // password2
+const password1 = document.getElementById('password1');
+const password2 = document.getElementById('password2');
+const submitText = document.getElementById('submit-text');
+const submitSpinner = document.getElementById('submit-spinner');
 
-// Функция переключения видимости пароля
+// Проверка DNS через API
+async function verifyEmailDomain(email) {
+    const domain = email.split('@')[1];
+    const emailGroup = document.querySelector('.input-group.email-checking');
+    emailGroup.classList.add('verifying');
+
+    try {
+        // Проверка MX записей
+        const mxResponse = await fetch(`https://dns.google/resolve?name=${domain}&type=MX`);
+        const mxData = await mxResponse.json();
+
+        if (mxData.Answer && mxData.Answer.length > 0) {
+            return true;
+        }
+
+        // Проверка A записей
+        const aResponse = await fetch(`https://dns.google/resolve?name=${domain}&type=A`);
+        const aData = await aResponse.json();
+
+        return aData.Answer && aData.Answer.length > 0;
+    } catch (error) {
+        console.error('DNS verification failed:', error);
+        return false;
+    } finally {
+        emailGroup.classList.remove('verifying');
+    }
+}
+
+// Полная проверка email
+async function validateEmail(email) {
+    // 1. Проверка формата
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+        return { valid: false, message: 'Некорректный формат email' };
+    }
+
+    const domain = email.split('@')[1].toLowerCase();
+
+    // 2. Проверка популярных доменов
+    if (POPULAR_DOMAINS.includes(domain)) {
+        return { valid: true };
+    }
+
+    // 3. Проверка одноразовых email
+    if (DISPOSABLE_DOMAINS.some(d => domain.includes(d))) {
+        return { valid: false, message: 'Одноразовые email не принимаются' };
+    }
+
+    // 4. DNS проверка
+    const domainExists = await verifyEmailDomain(email);
+    if (!domainExists) {
+        return { valid: false, message: 'Домен не существует или не принимает почту' };
+    }
+
+    return { valid: true };
+}
+
+// Валидация других полей
+function validateUsername(value) {
+    if (!value) return { valid: false, message: 'Введите имя пользователя' };
+    if (value.length < CONFIG.MIN_USERNAME_LENGTH || value.length > CONFIG.MAX_USERNAME_LENGTH) {
+        return { valid: false, message: `Имя должно быть от ${CONFIG.MIN_USERNAME_LENGTH} до ${CONFIG.MAX_USERNAME_LENGTH} символов` };
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+        return { valid: false, message: 'Только буквы, цифры, дефисы и подчеркивания' };
+    }
+    return { valid: true };
+}
+
+function validatePassword(value) {
+    if (!value) return { valid: false, message: 'Введите пароль' };
+    if (value.length < CONFIG.MIN_PASSWORD_LENGTH || value.length > CONFIG.MAX_PASSWORD_LENGTH) {
+        return { valid: false, message: `Пароль должен быть от ${CONFIG.MIN_PASSWORD_LENGTH} до ${CONFIG.MAX_PASSWORD_LENGTH} символов` };
+    }
+    if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])/.test(value)) {
+        return { valid: false, message: 'Минимум 1 заглавная буква и 1 цифра' };
+    }
+    return { valid: true };
+}
+
+function validatePasswordMatch(pass1, pass2) {
+    if (!pass2) return { valid: false, message: 'Подтвердите пароль' };
+    if (pass1 !== pass2) {
+        return { valid: false, message: 'Пароли не совпадают' };
+    }
+    return { valid: true };
+}
+
+// Установка/очистка ошибки
+function setError(input, message = '') {
+    const group = input.closest('.input-group');
+    if (!group) return;
+
+    group.classList.toggle('error', !!message);
+    const errorEl = group.querySelector('.error-message');
+    if (errorEl) errorEl.textContent = message;
+}
+
+// Показать уведомление
+function showNotification(message, type = 'success', duration = 3000) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = `notification ${type} show`;
+
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, duration);
+}
+
+// Переключение видимости пароля
 function togglePasswordVisibility(inputId) {
     const input = document.getElementById(inputId);
     const icon = input.nextElementSibling.querySelector('i');
@@ -27,108 +149,88 @@ function togglePasswordVisibility(inputId) {
     }
 }
 
-// Обработчик социальной авторизации
+// Социальная авторизация
 function handleSocialAuth(provider) {
-    console.log(`Авторизация через ${provider}`);
-    alert(`Перенаправление на ${provider}...`);
+    showNotification(`Перенаправление на ${provider}...`, 'warning');
+    console.log(`Auth with ${provider}`);
 }
 
-// Валидация полей
-function validateUsername(value) {
-    return /^[a-z0-9_-]{3,30}$/i.test(value);
-}
-
-function validateEmail(value) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function validatePassword(value) {
-    return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,50}$/.test(value);
-}
-
-// Установка/очистка ошибки
-function setError(input, message = '') {
-    const group = input.closest('.input-group');
-    if (!group) return;
-
-    group.classList.toggle('error', !!message);
-    const errorEl = group.querySelector('.error-message');
-    if (errorEl) errorEl.textContent = message;
+// Установка состояния загрузки
+function setLoadingState(isLoading) {
+    if (isLoading) {
+        submitText.style.display = 'none';
+        submitSpinner.style.display = 'inline-block';
+        form.querySelector('button[type="submit"]').disabled = true;
+    } else {
+        submitText.style.display = 'inline-block';
+        submitSpinner.style.display = 'none';
+        form.querySelector('button[type="submit"]').disabled = false;
+    }
 }
 
 // Обработчик отправки формы
-function handleSubmit(e) {
+async function handleSubmit(e) {
     e.preventDefault();
-    let isValid = true;
+    setLoadingState(true);
 
-    // Очищаем все ошибки перед проверкой
-    setError(username);
-    setError(email);
-    setError(password1);
-    setError(password2);
+    // Очищаем ошибки
+    [username, email, password1, password2].forEach(field => setError(field));
 
-    // Проверяем поля
-    if (!validateUsername(username.value.trim())) {
-        setError(username, ERROR_MESSAGES.USERNAME);
-        isValid = false;
-    }
+    // Валидация полей
+    const usernameValidation = validateUsername(username.value.trim());
+    const emailValidation = await validateEmail(email.value.trim());
+    const passwordValidation = validatePassword(password1.value.trim());
+    const passwordMatchValidation = validatePasswordMatch(
+        password1.value.trim(),
+        password2.value.trim()
+    );
 
-    if (!validateEmail(email.value.trim())) {
-        setError(email, ERROR_MESSAGES.EMAIL);
-        isValid = false;
-    }
+    // Устанавливаем ошибки
+    if (!usernameValidation.valid) setError(username, usernameValidation.message);
+    if (!emailValidation.valid) setError(email, emailValidation.message);
+    if (!passwordValidation.valid) setError(password1, passwordValidation.message);
+    if (!passwordMatchValidation.valid) setError(password2, passwordMatchValidation.message);
 
-    if (!validatePassword(password1.value.trim())) {
-        setError(password1, ERROR_MESSAGES.PASSWORD);
-        isValid = false;
-    }
+    // Проверяем общую валидность
+    const isValid = usernameValidation.valid && emailValidation.valid &&
+                   passwordValidation.valid && passwordMatchValidation.valid;
 
-    if (password1.value !== password2.value) {
-        setError(password2, ERROR_MESSAGES.CONFIRM_PASSWORD);
-        isValid = false;
-    }
-
-    // Если форма валидна - отправляем
     if (isValid) {
-        console.log('Форма готова к отправке:', {
-            username: username.value,
-            email: email.value
-        });
-
-        // Отправляем форму
-        form.submit();  // Этот вызов отправит форму
+        showNotification('Регистрация прошла успешно!', 'success');
+        setTimeout(() => {
+            form.submit();
+        }, 1500);
     } else {
-        // Фокус на первое поле с ошибкой
         document.querySelector('.input-group.error input')?.focus();
+        setLoadingState(false);
     }
 }
 
-// Валидация в реальном времени
+// Live валидация
 function setupLiveValidation() {
     username.addEventListener('input', () => {
-        setError(username, username.value.trim() && !validateUsername(username.value.trim())
-            ? ERROR_MESSAGES.USERNAME : '');
+        const validation = validateUsername(username.value.trim());
+        setError(username, username.value.trim() && !validation.valid ? validation.message : '');
     });
 
-    email.addEventListener('input', () => {
-        setError(email, email.value.trim() && !validateEmail(email.value.trim())
-            ? ERROR_MESSAGES.EMAIL : '');
+    email.addEventListener('blur', async () => {
+        const validation = await validateEmail(email.value.trim());
+        setError(email, email.value.trim() && !validation.valid ? validation.message : '');
     });
 
     password1.addEventListener('input', () => {
-        setError(password1, password1.value.trim() && !validatePassword(password1.value.trim())
-            ? ERROR_MESSAGES.PASSWORD : '');
+        const validation = validatePassword(password1.value.trim());
+        setError(password1, password1.value.trim() && !validation.valid ? validation.message : '');
 
-        // Проверяем подтверждение пароля, если оно уже введено
         if (password2.value.trim()) {
-            setError(password2, password1.value !== password2.value
-                ? ERROR_MESSAGES.CONFIRM_PASSWORD : '');
+            const matchValidation = validatePasswordMatch(password1.value.trim(), password2.value.trim());
+            setError(password2, !matchValidation.valid ? matchValidation.message : '');
         }
     });
 
     password2.addEventListener('input', () => {
-        setError(password2, password2.value.trim() && password1.value !== password2.value
-            ? ERROR_MESSAGES.CONFIRM_PASSWORD : '');
+        const validation = validatePasswordMatch(password1.value.trim(), password2.value.trim());
+        setError(password2, password2.value.trim() && !validation.valid ? validation.message : '');
     });
 }
 
@@ -136,12 +238,4 @@ function setupLiveValidation() {
 if (form) {
     form.addEventListener('submit', handleSubmit);
     setupLiveValidation();
-
-    // Добавляем обработчики на кнопки "глазиков"
-    document.querySelectorAll('.toggle-password').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const inputId = this.getAttribute('data-target');
-            togglePasswordVisibility(inputId);
-        });
-    });
 }
