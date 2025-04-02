@@ -154,6 +154,26 @@ class RegisterView(FormView):
 
 @login_required
 @csrf_protect
+
+def update_progress(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        book_id = data.get("book_id")
+        progress = data.get("progress")
+
+        if request.user.is_authenticated:
+            try:
+                user_book = UserBook.objects.get(user=request.user, book_id=book_id)
+                user_book.progress = progress
+                user_book.save()
+                return JsonResponse({"status": "success", "progress": progress})
+            except UserBook.DoesNotExist:
+                return JsonResponse({"status": "error", "message": "Книга не найдена в вашем списке"}, status=404)
+        else:
+            return JsonResponse({"status": "error", "message": "Вы не авторизованы"}, status=403)
+    
+    return JsonResponse({"status": "error", "message": "Неверный запрос"}, status=400)
+
 def update_book_status(request):
     """Обновление статуса книги для пользователя"""
     if request.method != 'POST':
@@ -186,7 +206,6 @@ def update_book_status(request):
         logger.error(f"Ошибка при обновлении статуса книги: {e}")
         return JsonResponse({'success': False, 'message': 'Внутренняя ошибка сервера'}, status=500)
 
-@login_required
 def profile(request):
     """Профиль пользователя с его книгами"""
     user_books = UserBook.objects.filter(user=request.user)

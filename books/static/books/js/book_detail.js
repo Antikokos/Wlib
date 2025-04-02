@@ -15,6 +15,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const bookDescription = document.getElementById("book-description");
     const progressText = document.getElementById("progress-text");
 
+    // const currentPages = parseInt(currentPageEl.textContent); // Текущие прочитанные страницы
+   
+    // const progress = Math.round((currentPages / totalPages) * 100); // Процент прогресса
+
     // Форматирование описания книги
     if (bookDescription) {
         formatBookDescription(bookDescription);
@@ -124,25 +128,53 @@ document.addEventListener("DOMContentLoaded", function() {
         updateProgress(pages, true);
     });
 
+    function getCSRFToken() {
+        return document.getElementById("csrf_token").value;
+    }
+    
+    function saveProgressToServer(pagesRead) {
+        fetch("/update-progress/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(), // 🔐 Передаём CSRF-токен
+            },
+            body: JSON.stringify({
+                book_id: bookId,
+                progress: pagesRead,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                console.log("Прогресс сохранён:", data.progress);
+            } else {
+                console.error("Ошибка сохранения:", data.message);
+            }
+        })
+        .catch(error => console.error("Ошибка запроса:", error));
+    }
+
     // Функция обновления прогресса
     function updateProgress(pagesRead, showSparkles) {
-        // Ограничиваем значение между 0 и totalPages
         pagesRead = Math.max(0, Math.min(totalPages, pagesRead));
         const percentage = (pagesRead / totalPages) * 100;
-        const roundedPercentage = Math.round(percentage * 10) / 10; // Один знак после запятой
-
+        const roundedPercentage = Math.round(percentage * 10) / 10;
+    
         progressFill.style.width = percentage + "%";
         progressText.textContent = roundedPercentage + "%";
         currentPageEl.textContent = pagesRead;
         pageInput.value = pagesRead;
-        progressSlider.value = pagesRead; // Обновляем значение слайдера
-
+        progressSlider.value = pagesRead;
+    
         localStorage.setItem(`bookProgress_${bookId}`, pagesRead);
-
+        saveProgressToServer(pagesRead); // 📌 Добавлено!
+    
         if (showSparkles && pagesRead > 0) {
             createSparkles(progressFill);
         }
     }
+    
 
     // Функция форматирования описания книги
     function formatBookDescription(element) {
@@ -213,12 +245,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const currentPages = parseInt(currentPageEl.textContent);
         const totalPages = parseInt(document.getElementById("total-pages").textContent) || 1;
         const progress = Math.round((currentPages / totalPages) * 100);
-
+    
         fetch("/update_book_status/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken")
+                "X-CSRFToken": getCSRFToken(),  // Используем CSRF-токен из hidden input
             },
             body: JSON.stringify({
                 book_id: bookId,
@@ -244,6 +276,7 @@ document.addEventListener("DOMContentLoaded", function() {
             showNotification("Произошла ошибка", true);
         });
     }
+    
 
     function getStatusName(status) {
         const names = {

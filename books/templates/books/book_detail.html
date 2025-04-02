@@ -52,6 +52,7 @@
             <p id="book-year">Год: {{ book.published_date|default:"Неизвестно" }}</p>
             <p id="book-pages">Страниц: <span id="total-pages">{{ book.page_count|default:"0" }}</span></p>
 
+            <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
             <div class="reading-progress">
                 <h3 class="progress-title">
                     <i class="fas fa-bookmark progress-icon"></i>
