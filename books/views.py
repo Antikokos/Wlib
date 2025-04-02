@@ -160,13 +160,15 @@ def update_progress(request):
         data = json.loads(request.body)
         book_id = data.get("book_id")
         progress = data.get("progress")
+        progress_percent = data.get('progress_percent', 0)
 
         if request.user.is_authenticated:
             try:
                 user_book = UserBook.objects.get(user=request.user, book_id=book_id)
                 user_book.progress = progress
+                user_book.progress_percent = progress_percent
                 user_book.save()
-                return JsonResponse({"status": "success", "progress": progress})
+                return JsonResponse({"status": "success", "progress": progress, "progress_percent": progress_percent})
             except UserBook.DoesNotExist:
                 return JsonResponse({"status": "error", "message": "Книга не найдена в вашем списке"}, status=404)
         else:
@@ -184,6 +186,7 @@ def update_book_status(request):
         book_id = data.get('book_id')
         status = data.get('status')
         progress = data.get('progress', 0)
+        progress_percent = data.get('progress_percent', 0)
 
         if not book_id or not status:
             return JsonResponse({'success': False, 'message': 'Недостаточно данных'}, status=400)
@@ -192,7 +195,7 @@ def update_book_status(request):
         UserBook.objects.update_or_create(
             user=request.user,
             book_id=book_id,
-            defaults={'status': status, 'progress': progress}
+            defaults={'status': status, 'progress': progress, 'progress_percent': progress_percent}
         )
 
         # Очищаем кэш для этой книги в профиле
@@ -229,6 +232,7 @@ def profile(request):
                         'thumbnail': book['volumeInfo'].get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
                         'status': user_book.status,
                         'progress': user_book.progress,
+                        'progress_percent': user_book.progress_percent,
                     }
                     cache.set(cache_key, book_data, 86400)
             except requests.exceptions.RequestException:

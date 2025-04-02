@@ -609,15 +609,20 @@
                                 <h4>{{ book.title }}</h4>
                                 <p>{{ book.authors }}</p>
                                 <div class="profile-progress-container">
-                                    <div class="profile-progress-bar" style="width: {{ book.progress }}%;"></div>
+                                    <!-- Заменяем progress на progress_percent -->
+                                    <div class="profile-progress-bar" style="width: {{ book.progress_percent }}%;"></div>
                                 </div>
-                                <div class="progress-text">{{ book.progress }}% прочитано</div>
+                                <div class="progress-text">
+                                    <!-- Заменяем progress на progress_percent -->
+                                    {{ book.progress_percent }}% прочитано
+                                </div>
                                 <div class="profile-book-badge">Читаю</div>
                                 <button class="remove-book-btn" data-book-id="{{ book.id }}">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
                         </div>
+                        
                     </a>
                     {% endfor %}
                 {% else %}

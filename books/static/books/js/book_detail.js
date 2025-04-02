@@ -133,6 +133,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     function saveProgressToServer(pagesRead) {
+        const percentage = (pagesRead / totalPages) * 100
         fetch("/update-progress/", {
             method: "POST",
             headers: {
@@ -142,6 +143,7 @@ document.addEventListener("DOMContentLoaded", function() {
             body: JSON.stringify({
                 book_id: bookId,
                 progress: pagesRead,
+                progress_percent: percentage, // Передаём процент прогресса
             }),
         })
         .then(response => response.json())
@@ -255,9 +257,9 @@ document.addEventListener("DOMContentLoaded", function() {
             body: JSON.stringify({
                 book_id: bookId,
                 status: status,
-                progress: status === 'read' ? 100 : progress,
-                current_page: status === 'read' ? totalPages : currentPages,
-                total_pages: totalPages
+                progress: status === 'read' ? totalPages : currentPages,
+                current_page: status === 'read' ? totalPages : currentPages, // Передаем текущую страницу
+                progress_percent: status === 'read' ? 100 : progress // Передаем прогресс в процентах
             })
         })
         .then(response => response.json())
@@ -298,21 +300,6 @@ document.addEventListener("DOMContentLoaded", function() {
             notification.classList.remove("show");
             setTimeout(() => notification.remove(), 300);
         }, 3000);
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + "=")) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
     }
 });
 
