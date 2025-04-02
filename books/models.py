@@ -12,7 +12,8 @@ class UserBook(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     book_id = models.CharField(max_length=255)  # ID книги из Google Books API
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-    progress = models.PositiveIntegerField(default=0)  # Прогресс чтения в процентах
+    progress = models.PositiveIntegerField(default=0)  # Прогресс чтения в страницах
+    progress_percent = models.PositiveIntegerField(default=0)
 
     class Meta:
         unique_together = ('user', 'book_id')  # Пользователь не может добавить одну книгу дважды

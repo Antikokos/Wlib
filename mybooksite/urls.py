@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from books import views
-from books.views import RegisterView
+from books.views import RegisterView, update_progress
 
 
 urlpatterns = [
@@ -15,5 +15,8 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('profile/', views.profile, name='profile'),
     path('logout/', views.logout_view, name='logout'),
-    path('update_book_status/', views.update_book_status, name='update_book_status')
+    path('update_book_status/', views.update_book_status, name='update_book_status'),
+    path("update-progress/", update_progress, name="update_progress"),
+    path('get_book_status/', views.get_book_status, name='get_book_status'),
+    path('remove_book/', views.remove_book, name='remove_book'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,114 +1,677 @@
+/* Основные стили страницы книги */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    color: #f5f5f5;
+}
 
-
-/* Стили для страницы книги */
 .book-container {
     display: flex;
     align-items: flex-start;
-    gap: 70px;  /* Увеличено расстояние между книгой и описанием */
+    gap: 60px;
     margin-top: 30px;
-    margin-left: 50px;
-    justify-content: flex-start;
-    width: 100%;
+}
+
+/* Секция с обложкой и статусом */
+.book-cover-section {
+    width: 350px;
+    flex-shrink: 0;
+    position: relative;
 }
 
 .book-cover-container {
-    width: 350px;  /* Уменьшаем ширину изображения */
+    width: 100%;
     height: 500px;
-    border: 1px solid #f5f5f5;
-    flex-shrink: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+.book-cover-container:hover {
+    transform: translateY(-5px);
 }
 
 .book-cover-container img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 20px;
+    transition: transform 0.5s ease;
 }
 
-.book-details {
-    flex-grow: 1;
-    text-align: left;
-    /* max-width: 900px;  */
-}
-
-.book-details p {
-    color: #f5f5f5;
-    font-size: 20px;
-    line-height: 1.8;
-    border-bottom: 1px solid #f5f5f5;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-}
-
-/* Кнопка "Добавить" и выпадающее меню */
-.add-button-container {
+/* Стили для блока статуса */
+.book-status-container {
     margin-top: 20px;
+    position: relative;
 }
 
-/* Стили для кнопок */
-.add-button, .status-buttons button {
-    background-color: #C71585;
+.status-main-button {
+    background: linear-gradient(to right, #4a4a4a, #3a3a3a);
     border: none;
-    padding: 12px 20px;  /* Установим одинаковое значение для всех кнопок */
-    border-radius: 5px;
+    padding: 14px 25px;
+    border-radius: 8px;
     color: white;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%; /* Сделаем кнопки одинаковой ширины */
+    transition: all 0.3s ease;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 
-.add-button:hover, .status-buttons button:hover {
-    background-color: #a3126b;
+.status-main-button.reading {
+    background: linear-gradient(to right, #f39c12, #e67e22);
 }
 
-/* Индивидуальные цвета для кнопок статуса */
-.reading-button {
-    background-color: #f39c12; /* Желтый для "Читаю" */
+.status-main-button.want-to-read {
+    background: linear-gradient(to right, #3498db, #2980b9);
 }
 
-.reading-button:hover {
-    background-color: #e67e22;
+.status-main-button.read {
+    background: linear-gradient(to right, #2ecc71, #27ae60);
 }
 
-.read-button {
-    background-color: #2ecc71; /* Зеленый для "Прочитано" */
-}
-
-.read-button:hover {
-    background-color: #27ae60;
-}
-
-.want-to-read-button {
-    background-color: #3498db; /* Синий для "В планах" */
-}
-
-.want-to-read-button:hover {
-    background-color: #2980b9;
+.status-main-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .status-buttons {
     display: none;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
     margin-top: 10px;
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+    background: #2c2f33;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(245, 245, 245, 0.1);
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.status-btn {
+    padding: 12px 20px;
+    border-radius: 6px;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-btn i {
+    width: 20px;
+    text-align: center;
+}
+
+.reading-button {
+    background: linear-gradient(to right, #f39c12, #e67e22);
+}
+
+.reading-button:hover {
+    background: linear-gradient(to right, #e67e22, #d35400);
+}
+
+.want-to-read-button {
+    background: linear-gradient(to right, #3498db, #2980b9);
+}
+
+.want-to-read-button:hover {
+    background: linear-gradient(to right, #2980b9, #1a6ea8);
+}
+
+.read-button {
+    background: linear-gradient(to right, #2ecc71, #27ae60);
+}
+
+.read-button:hover {
+    background: linear-gradient(to right, #27ae60, #219653);
+}
+
+/* Детали книги */
+.book-details {
+    flex-grow: 1;
+}
+
+.book-details h1 {
+    font-size: 32px;
+    margin: 0 0 20px 0;
+    color: #f5f5f5;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.book-details p {
+    color: #d1d5db;
+    font-size: 18px;
+    line-height: 1.6;
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(245, 245, 245, 0.1);
+}
+
+/* Стили для описания книги */
+.book-description-container {
+    margin: 30px 0;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(245, 245, 245, 0.1);
+}
+
+.description-title {
+    font-size: 22px;
+    color: #f5f5f5;
+    margin-bottom: 15px;
+    position: relative;
+    padding-left: 15px;
+}
+
+.description-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px;
+    height: 22px;
+    background: #C71585;
+    border-radius: 3px;
+}
+
+.book-description {
+    font-size: 17px;
+    line-height: 1.8;
+    color: #d1d5db;
+    text-align: justify;
+    hyphens: auto;
+    column-count: 1;
+    column-gap: 40px;
+}
+
+.book-description p {
+    margin-bottom: 1.2em;
+    line-height: 1.8;
+    text-align: justify;
+    hyphens: auto;
+    position: relative;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.book-description p.first-para {
+    text-indent: 0;
+}
+
+.book-description p:not(.first-para) {
+    text-indent: 1.5em;
+}
+
+.book-description p:last-child {
+    margin-bottom: 0;
+}
+
+/* Стиль для первой буквы первого абзаца */
+.book-description p.first-para::first-letter {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #C71585;
+    line-height: 0.8;
+    padding-right: 2px;
+}
+
+@media (min-width: 992px) {
+    .book-description {
+        column-count: 2;
+    }
+}
+
+/* Прогресс-бар чтения */
+.reading-progress {
+    margin: 30px 0;
+    background: rgba(44, 47, 51, 0.7);
+    padding: 25px;
+    border-radius: 12px;
+    border-left: 4px solid #C71585;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.progress-title {
+    font-size: 20px;
+    margin: 0 0 20px 0;
+    color: #f5f5f5;
+    display: flex;
+    align-items: center;
+}
+
+.progress-icon {
+    margin-right: 12px;
+    color: #C71585;
+}
+
+.progress-visualization {
+    margin-bottom: 25px;
 }
 
 .progress-bar-container {
-    margin-top: 20px;
-}
-
-.progress-bar {
-    width: 100%;
-    height: 10px;
-    background-color: #444;
-    border-radius: 5px;
-    margin-top: 5px;
     position: relative;
+    margin-bottom: 15px;
 }
 
-.progress-bar .progress-fill {
+.progress-bar-bg {
+    width: 100%;
+    height: 16px;
+    background-color: #2c2f33;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar-fill {
     height: 100%;
-    background-color: #C71585;
-    border-radius: 5px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #C71585, #ff69b4);
+    position: relative;
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    overflow: hidden;
+}
+
+.progress-bar-wave {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.4) 0%, transparent 70%);
+    opacity: 0.6;
+    animation: wave 3s linear infinite;
+    transform: translateY(-10px);
+}
+
+.progress-bar-sparkles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.sparkle {
+    position: absolute;
+    background-color: white;
+    border-radius: 50%;
+    opacity: 0;
+    animation: sparkle 2s infinite;
+}
+
+@keyframes wave {
+    0% { transform: translateX(-100%) translateY(-10px); }
+    100% { transform: translateX(100%) translateY(-10px); }
+}
+
+@keyframes sparkle {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(0); opacity: 0; }
+}
+
+.progress-percentage {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+}
+
+.pages-display {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    color: #f5f5f5;
+    margin-top: 5px;
+}
+
+.pages-separator {
+    margin: 0 8px;
+    color: #bdc1c6;
+}
+
+.pages-label {
+    margin-left: 8px;
+    font-size: 15px;
+    color: #bdc1c6;
+}
+
+/* Элементы управления прогрессом */
+.progress-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.progress-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #2c2f33;
+    color: #f5f5f5;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.progress-btn:hover {
+    background: #C71585;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(199, 21, 133, 0.3);
+}
+
+/* Обновленные стили для слайдера */
+.slider-container {
+    flex: 1;
+    position: relative;
+    padding-top: 25px;
+}
+
+.progress-slider {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    background: linear-gradient(to right, #C71585, #C71585) no-repeat #444;
+    background-size: var(--progress-percent, 0%) 100%;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    transition: background-size 0.3s ease;
+}
+
+.progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #f5f5f5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    border: 2px solid #C71585;
+}
+
+.progress-slider::-webkit-slider-thumb:hover {
+    background: #C71585;
+    border-color: #f5f5f5;
+    transform: scale(1.1);
+}
+
+.slider-tooltip {
+    position: absolute;
+    top: -5px;
+    left: 0;
+    transform: translateX(-50%);
+    background: #C71585;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(199, 21, 133, 0.3);
+    z-index: 10;
+}
+
+.slider-container:hover .slider-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
+}
+
+/* Поле ввода страницы */
+.page-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.page-input {
+    flex: 1;
+    padding: 12px 15px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #2c2f33;
+    color: #f5f5f5;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.page-input:focus {
+    border-color: #C71585;
+    box-shadow: 0 0 0 2px rgba(199, 21, 133, 0.3);
+    outline: none;
+}
+
+.page-input-btn {
+    padding: 0 20px;
+    background: #C71585;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-input-btn:hover {
+    background: #a3126b;
+    transform: translateY(-2px);
+}
+
+/* Стили для уведомлений */
+.notification {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 14px 28px;
+    border-radius: 8px;
+    background: #2ecc71;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notification.error {
+    background: #e74c3c;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+.notification::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    display: inline-block;
+}
+
+.notification.success::before {
+    content: "\f00c";
+}
+
+.notification.error::before {
+    content: "\f06a";
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .book-container {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .book-cover-section {
+        width: 100%;
+    }
+
+    .book-cover-container {
+        height: auto;
+        aspect-ratio: 2/3;
+    }
+
+    .reading-progress {
+        padding: 20px;
+    }
+
+    .progress-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .progress-slider {
+        margin: 15px 0;
+    }
+
+    .book-description {
+        column-count: 1 !important;
+    }
+
+    .notification {
+        width: 90%;
+        text-align: center;
+        padding: 12px 16px;
+    }
+}
+/* Стили для кнопки сохранения с анимацией */
+.page-input-btn {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.page-input-btn.pulse {
+    animation: pulse 1s ease;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(199, 21, 133, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(199, 21, 133, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(199, 21, 133, 0);
+    }
+}
+
+.page-input-btn:hover::before {
+    content: "Сохранить изменения";
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #C71585;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+/* Улучшенный слайдер */
+.slider-container {
+    flex: 1;
+    position: relative;
+    padding-top: 25px;
+}
+
+.progress-slider {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    background: #444;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #f5f5f5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    border: 2px solid #C71585;
+}
+
+.progress-slider::-webkit-slider-thumb:hover {
+    background: #C71585;
+    border-color: #f5f5f5;
+    transform: scale(1.1);
+}
+
+.slider-tooltip {
+    position: absolute;
+    top: -35px;
+    left: 0;
+    transform: translateX(-50%);
+    background: #C71585;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(199, 21, 133, 0.3);
+}
+
+.slider-container:hover .slider-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
 }

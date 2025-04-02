@@ -7,50 +7,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль пользователя</title>
+    <title>Профиль пользователя | {{ user.username }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #C71585;
+            --primary-dark: #8a0d5a;
+            --bg: #1d1f21;
+            --card-bg: #2c2f33;
+            --text: #f5f5f5;
+            --text-secondary: #bdc1c6;
+            --read: #4CAF50;
+            --reading: #2196F3;
+            --planned: #FF9800;
+            --error: #e74c3c;
+            --success: #2ecc71;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
         body {
-            background-color: #1d1f21;
-            color: #f5f5f5;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            line-height: 1.6;
         }
 
         .container {
-            width: 80%;
-            margin: 80px auto 20px;
-            background: #2c2f33;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             flex: 1;
         }
 
         .profile {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #444;
         }
 
         .avatar {
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            background: #444;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
-            color: #f5f5f5;
-            border: 2px solid #C71585;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text);
+            border: 3px solid var(--text);
+            box-shadow: 0 5px 20px rgba(199, 21, 133, 0.4);
+            flex-shrink: 0;
         }
 
         .info {
@@ -58,115 +81,678 @@
         }
 
         .info h2 {
-            color: #C71585;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+            font-weight: 600;
         }
 
-        button {
-            padding: 10px 15px;
+        .info p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .logout-btn {
+            padding: 0.7rem 1.5rem;
             border: none;
-            background: #C71585;
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
             color: white;
-            border-radius: 5px;
+            border-radius: 2rem;
             cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(199, 21, 133, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        button:hover {
-            background: #a3126b;
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(199, 21, 133, 0.5);
         }
 
         .tabs {
             display: flex;
-            margin-top: 20px;
-            border-bottom: 2px solid #C71585;
+            margin: 2rem 0;
+            border-bottom: 2px solid var(--primary);
+            gap: 0.5rem;
         }
 
         .tab {
             flex: 1;
-            padding: 10px;
+            padding: 1rem;
             text-align: center;
             cursor: pointer;
-            border: 1px solid #C71585;
-            background: #2c2f33;
-            color: #f5f5f5;
+            background: var(--card-bg);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            border-radius: 0.5rem 0.5rem 0 0;
+            position: relative;
+        }
+
+        .tab::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
         }
 
         .tab.active {
-            background: #C71585;
-            color: white;
+            background: rgba(199, 21, 133, 0.1);
+        }
+
+        .tab.active::after {
+            transform: scaleX(1);
+        }
+
+        .tab:hover {
+            background: rgba(199, 21, 133, 0.2);
         }
 
         .content {
             display: none;
-            padding: 20px;
-            color: #f5f5f5;
+            padding: 2rem 0;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .content.active {
             display: block;
+        }
+
+        .content h3 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            position: relative;
+        }
+
+        .content h3::after {
+            content: '';
+            position: absolute;
+            bottom: -0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .book-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .profile-book-item {
+            background: linear-gradient(to bottom, #333, #2a2a2a);
+            padding: 1.5rem;
+            border-radius: 0.8rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            text-decoration: none;
+            color: inherit;
+            border-left: 4px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-book-item[data-status="read"] {
+            border-left-color: var(--read);
+        }
+
+        .profile-book-item[data-status="reading"] {
+            border-left-color: var(--reading);
+        }
+
+        .profile-book-item[data-status="planned"] {
+            border-left-color: var(--planned);
+        }
+
+        .profile-book-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .book-content {
+            display: flex;
+            gap: 1.2rem;
+            flex-grow: 1;
+        }
+
+        .profile-book-cover {
+            width: 80px;
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+            background-color: #444;
+            border-radius: 0.5rem;
+            flex-shrink: 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .profile-book-item:hover .profile-book-cover {
+            transform: rotate(-3deg) scale(1.05);
+        }
+
+        .book-details {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .book-details h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .book-details p {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .profile-progress-container {
+            margin-top: auto;
+            background: #444;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .profile-progress-bar {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .profile-book-item[data-status="read"] .profile-progress-bar {
+            background: linear-gradient(to right, var(--read), #2E7D32);
+            width: 100% !important;
+        }
+
+        .profile-book-item[data-status="reading"] .profile-progress-bar {
+            background: linear-gradient(to right, var(--reading), #1565C0);
+        }
+
+        .profile-book-item[data-status="planned"] .profile-progress-bar {
+            background: linear-gradient(to right, var(--planned), #EF6C00);
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            text-align: right;
+            color: var(--text-secondary);
+        }
+
+        .profile-book-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-book-item[data-status="read"] .profile-book-badge {
+            background: linear-gradient(to right, var(--read), #2E7D32);
+            color: white;
+        }
+
+        .profile-book-item[data-status="reading"] .profile-book-badge {
+            background: linear-gradient(to right, var(--reading), #1565C0);
+            color: white;
+        }
+
+        .profile-book-item[data-status="planned"] .profile-book-badge {
+            background: linear-gradient(to right, var(--planned), #EF6C00);
+            color: white;
+        }
+
+        .profile-book-item:hover .profile-book-badge {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .remove-book-btn {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(to right, var(--error), #c0392b);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            z-index: 2;
+        }
+
+        .profile-book-item:hover .remove-book-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .remove-book-btn:hover {
+            transform: translateY(0) scale(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            grid-column: 1 / -1;
+            opacity: 0;
+            animation: fadeIn 0.5s ease 0.3s forwards;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        /* Анимация удаления */
+        @keyframes bookRemove {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+                height: auto;
+                margin-bottom: 1.5rem;
+            }
+            50% {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.95);
+                height: 0;
+                margin-bottom: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+                border: none;
+            }
+        }
+
+        .book-removing {
+            animation: bookRemove 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            overflow: hidden;
+        }
+
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .notification.success {
+            background: var(--success);
+        }
+
+        .notification.error {
+            background: var(--error);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 1.5rem;
+            }
+
+            .profile {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.2rem;
+            }
+
+            .avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+
+            .tabs {
+                flex-direction: column;
+                border-bottom: none;
+                gap: 0.3rem;
+            }
+
+            .tab {
+                border-radius: 0.5rem;
+            }
+
+            .tab::after {
+                display: none;
+            }
+
+            .book-list {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-book-cover {
+                width: 70px;
+                height: 105px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 100%;
+                border-radius: 0;
+                margin: 0;
+                padding: 1.2rem 1rem;
+            }
+
+            .book-details h4 {
+                font-size: 1rem;
+            }
+
+            .empty-state {
+                padding: 2rem 1rem;
+                font-size: 1rem;
+            }
+
+            .empty-state i {
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="profile">
-            <div class="avatar">🍔</div>
+            <div class="avatar">{{ user.username|first|upper }}</div>
             <div class="info">
                 <h2>{{ user.username }}</h2>
                 <p>Email: {{ user.email }}</p>
-                <button onclick="location.href='{% url 'logout' %}'">Выйти</button>
+                <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
             </div>
         </div>
+
         <div class="tabs">
             <div class="tab active" onclick="switchTab(0)">Прочитано</div>
             <div class="tab" onclick="switchTab(1)">Читаю</div>
             <div class="tab" onclick="switchTab(2)">В планах</div>
         </div>
+
         <div class="content active" id="tab-0">
             <h3>Прочитанные книги</h3>
             <div class="book-list">
-                {% for book in read_books %}
-                <div class="book-item">
-                    <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
-                    <p>{{ book.title }}</p>
-                    <p>{{ book.authors }}</p>
-                </div>
-                {% endfor %}
+                {% if read_books %}
+                    {% for book in read_books %}
+                    <a href="{% url 'book_detail' book.id %}" class="profile-book-item" data-status="read">
+                        <div class="book-content">
+                            <div class="profile-book-cover" style="background-image: url('{% if book.thumbnail %}{{ book.thumbnail }}{% else %}{% static 'books/images/default_book_cover.jpg' %}{% endif %}');"></div>
+                            <div class="book-details">
+                                <h4>{{ book.title }}</h4>
+                                <p>{{ book.authors }}</p>
+                                <div class="profile-progress-container">
+                                    <div class="profile-progress-bar" style="width: 100%;"></div>
+                                </div>
+                                <div class="progress-text">100% прочитано</div>
+                                <div class="profile-book-badge">Прочитано</div>
+                                <button class="remove-book-btn" data-book-id="{{ book.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-book-open"></i>
+                        Здесь пока нет прочитанных книг
+                    </div>
+                {% endif %}
             </div>
         </div>
-        
+
         <div class="content" id="tab-1">
             <h3>Сейчас читаю</h3>
             <div class="book-list">
-                {% for book in reading_books %}
-                <div class="book-item">
-                    <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
-                    <p>{{ book.title }}</p>
-                    <p>{{ book.authors }}</p>
-                    <p>Прогресс: {{ book.progress }}%</p>
-                </div>
-                {% endfor %}
+                {% if reading_books %}
+                    {% for book in reading_books %}
+                    <a href="{% url 'book_detail' book.id %}" class="profile-book-item" data-status="reading">
+                        <div class="book-content">
+                            <div class="profile-book-cover" style="background-image: url('{% if book.thumbnail %}{{ book.thumbnail }}{% else %}{% static 'books/images/default_book_cover.jpg' %}{% endif %}');"></div>
+                            <div class="book-details">
+                                <h4>{{ book.title }}</h4>
+                                <p>{{ book.authors }}</p>
+                                <div class="profile-progress-container">
+                                    <div class="profile-progress-bar" style="width: {{ book.progress_percent }}%;"></div>
+                                </div>
+                                <div class="progress-text">{{ book.progress_percent }}% прочитано ({{ book.progress }}/{{ book.page_count }} стр.)</div>
+                                <div class="profile-book-badge">Читаю</div>
+                                <button class="remove-book-btn" data-book-id="{{ book.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-book-reader"></i>
+                        Вы пока не читаете ни одной книги
+                    </div>
+                {% endif %}
             </div>
         </div>
-        
+
         <div class="content" id="tab-2">
             <h3>Планы на чтение</h3>
             <div class="book-list">
-                {% for book in want_to_read_books %}
-                <div class="book-item">
-                    <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
-                    <p>{{ book.title }}</p>
-                    <p>{{ book.authors }}</p>
-                </div>
-                {% endfor %}
+                {% if want_to_read_books %}
+                    {% for book in want_to_read_books %}
+                    <a href="{% url 'book_detail' book.id %}" class="profile-book-item" data-status="planned">
+                        <div class="book-content">
+                            <div class="profile-book-cover" style="background-image: url('{% if book.thumbnail %}{{ book.thumbnail }}{% else %}{% static 'books/images/default_book_cover.jpg' %}{% endif %}');"></div>
+                            <div class="book-details">
+                                <h4>{{ book.title }}</h4>
+                                <p>{{ book.authors }}</p>
+                                <div class="profile-progress-container">
+                                    <div class="profile-progress-bar" style="width: {{ book.progress_percent }}%;"></div>
+                                </div>
+                                <div class="progress-text">{{ book.progress_percent }}% прочитано ({{ book.progress }}/{{ book.page_count }} стр.)</div>
+                                <div class="profile-book-badge">В планах</div>
+                                <button class="remove-book-btn" data-book-id="{{ book.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-bookmark"></i>
+                        У вас пока нет книг в планах на чтение
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
+
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработчики удаления книг
+            document.querySelectorAll('.remove-book-btn').forEach(button => {
+                button.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const bookItem = this.closest('.profile-book-item');
+                    const bookList = bookItem.parentElement;
+                    const bookId = this.getAttribute('data-book-id');
+
+                    // Немедленно запускаем анимацию удаления
+                    bookItem.classList.add('book-removing');
+
+                    try {
+                        const response = await fetch('/remove_book/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken')
+                            },
+                            body: JSON.stringify({ book_id: bookId })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // После анимации удаляем элемент из DOM
+                            setTimeout(() => {
+                                bookItem.remove();
+                                showNotification('Книга удалена из закладок', false);
+
+                                // Если это была последняя книга, показываем пустое состояние
+                                if (bookList.querySelectorAll('.profile-book-item').length === 0) {
+                                    showEmptyState(bookList);
+                                }
+                            }, 400);
+                        } else {
+                            bookItem.classList.remove('book-removing');
+                            showNotification(data.message, true);
+                        }
+                    } catch (error) {
+                        bookItem.classList.remove('book-removing');
+                        showNotification('Ошибка при удалении книги', true);
+                        console.error('Error:', error);
+                    }
+                });
+            });
+
+            // Функция показа пустого состояния
+            function showEmptyState(bookList) {
+                const tabId = bookList.parentElement.id;
+                let icon, text;
+
+                switch(tabId) {
+                    case 'tab-0':
+                        icon = 'fa-book-open';
+                        text = 'Здесь пока нет прочитанных книг';
+                        break;
+                    case 'tab-1':
+                        icon = 'fa-book-reader';
+                        text = 'Вы пока не читаете ни одной книги';
+                        break;
+                    case 'tab-2':
+                        icon = 'fa-bookmark';
+                        text = 'У вас пока нет книг в планах на чтение';
+                        break;
+                }
+
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <i class="fas ${icon}"></i>
+                    ${text}
+                `;
+
+                bookList.appendChild(emptyState);
+            }
+
+            // Функция показа уведомлений
+            function showNotification(message, isError) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${isError ? 'error' : 'success'}`;
+                notification.innerHTML = `
+                    <i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+                    ${message}
+                `;
+                document.body.appendChild(notification);
+
+                // Показываем уведомление
+                setTimeout(() => notification.classList.add('show'), 10);
+
+                // Скрываем через 3 секунды
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+
+            // Функция получения куки
+            function getCookie(name) {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const [cookieName, cookieValue] = cookie.trim().split('=');
+                    if (cookieName === name) {
+                        return decodeURIComponent(cookieValue);
+                    }
+                }
+                return null;
+            }
+        });
+
+        // Переключение вкладок
         function switchTab(index) {
-            let tabs = document.querySelectorAll('.tab');
-            let contents = document.querySelectorAll('.content');
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.content');
+
             tabs.forEach(tab => tab.classList.remove('active'));
             contents.forEach(content => content.classList.remove('active'));
+
             tabs[index].classList.add('active');
             contents[index].classList.add('active');
         }
