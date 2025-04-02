@@ -409,6 +409,91 @@
             display: block;
         }
 
+        /* Стили для кнопки удаления */
+        .remove-book-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 3;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-book-item:hover .remove-book-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .remove-book-btn:hover {
+            transform: translateY(0) scale(1.1);
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+        }
+
+        /* Анимация удаления */
+        @keyframes fadeOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.9); }
+        }
+
+        .removing {
+            animation: fadeOut 0.4s ease forwards;
+        }
+
+        /* Стили для уведомлений */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 28px;
+            border-radius: 8px;
+            background: #2ecc71;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notification.error {
+            background: #e74c3c;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        .notification::before {
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+        }
+
+        .notification.success::before {
+            content: "\f00c";
+        }
+
+        .notification.error::before {
+            content: "\f06a";
+        }
+
         /* Анимация переключения вкладок */
         @keyframes tabSwitch {
             0% { opacity: 0; transform: translateY(10px); }
@@ -496,6 +581,9 @@
                                 </div>
                                 <div class="progress-text">100% прочитано</div>
                                 <div class="profile-book-badge">Прочитано</div>
+                                <button class="remove-book-btn" data-book-id="{{ book.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </div>
                         </div>
                     </a>
@@ -525,6 +613,9 @@
                                 </div>
                                 <div class="progress-text">{{ book.progress }}% прочитано</div>
                                 <div class="profile-book-badge">Читаю</div>
+                                <button class="remove-book-btn" data-book-id="{{ book.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </div>
                         </div>
                     </a>
@@ -554,6 +645,9 @@
                                 </div>
                                 <div class="progress-text">0% прочитано</div>
                                 <div class="profile-book-badge">В планах</div>
+                                <button class="remove-book-btn" data-book-id="{{ book.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </div>
                         </div>
                     </a>
@@ -579,6 +673,92 @@
             tabs[index].classList.add('active');
             contents[index].classList.add('active');
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const removeButtons = document.querySelectorAll('.remove-book-btn');
+
+            removeButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const bookId = this.getAttribute('data-book-id');
+                    const bookItem = this.closest('.profile-book-item');
+
+                    // Добавляем класс для анимации
+                    bookItem.classList.add('removing');
+
+                    // Отправляем запрос на сервер
+                    fetch('/remove_book/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            book_id: bookId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // После завершения анимации удаляем элемент
+                            setTimeout(() => {
+                                bookItem.remove();
+                                showNotification('Книга удалена из закладок');
+
+                                // Если список пуст, показываем сообщение
+                                const bookList = bookItem.parentElement;
+                                if (bookList.children.length === 1) { // Учитываем empty-state
+                                    const emptyState = document.createElement('div');
+                                    emptyState.className = 'empty-state';
+                                    emptyState.innerHTML = `
+                                        <i class="fas fa-book-open"></i>
+                                        Здесь пока нет книг
+                                    `;
+                                    bookList.appendChild(emptyState);
+                                }
+                            }, 400);
+                        } else {
+                            bookItem.classList.remove('removing');
+                            showNotification(data.message, true);
+                        }
+                    })
+                    .catch(error => {
+                        bookItem.classList.remove('removing');
+                        showNotification('Произошла ошибка', true);
+                    });
+                });
+            });
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.startsWith(name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            function showNotification(message, isError = false) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${isError ? 'error' : 'success'}`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => notification.classList.add('show'), 10);
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+        });
     </script>
     <!-- Подключение Font Awesome для иконок -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>

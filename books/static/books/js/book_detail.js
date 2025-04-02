@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const totalPages = parseInt(document.getElementById("total-pages").textContent) || 1;
     const progressFill = document.getElementById("progress-fill");
     const bookDescription = document.getElementById("book-description");
+    const progressText = document.getElementById("progress-text");
 
     // Форматирование описания книги
     if (bookDescription) {
@@ -23,16 +24,21 @@ document.addEventListener("DOMContentLoaded", function() {
     const bookId = document.querySelector(".container").getAttribute("data-book-id");
     const savedProgress = localStorage.getItem(`bookProgress_${bookId}`);
     const savedStatus = localStorage.getItem(`bookStatus_${bookId}`);
-    const initialProgress = savedProgress ? parseInt(savedProgress) : 0;
+    const initialProgress = savedProgress ? Math.min(parseInt(savedProgress), totalPages) : 0;
 
     // Установка начальных значений
-    updateProgress(initialProgress);
+    progressSlider.min = 0;
+    progressSlider.max = totalPages;
     progressSlider.value = initialProgress;
+    pageInput.min = 0;
     pageInput.max = totalPages;
+    updateProgress(initialProgress, false);
 
     if (savedStatus) {
         updateStatusButton(savedStatus);
-        createSparkles(progressFill);
+        if (savedStatus === "read") {
+            createSparkles(progressFill);
+        }
     }
 
     // Обработчики событий
@@ -54,23 +60,30 @@ document.addEventListener("DOMContentLoaded", function() {
             statusButtons.style.display = "none";
 
             if (status === "read") {
-                updateProgress(100);
-                progressSlider.value = 100;
+                updateProgress(totalPages, true);
+                progressSlider.value = totalPages;
                 createSparkles(progressFill);
             }
         });
     });
 
     progressSlider.addEventListener("input", function() {
-        const value = this.value;
-        updateProgress(value);
-        createSparkles(progressFill);
-        sliderTooltip.textContent = `${value}%`;
-        sliderTooltip.style.left = `${(value / this.max) * 100}%`;
+        let pages = parseInt(this.value);
+        // Ограничиваем значение между min и max
+        pages = Math.max(parseInt(this.min), Math.min(parseInt(this.max), pages));
+        this.value = pages; // Устанавливаем корректное значение обратно в слайдер
+        updateProgress(pages, true);
+        sliderTooltip.textContent = pages;
+        sliderTooltip.style.left = `${(pages / totalPages) * 100}%`;
     });
 
     progressSlider.addEventListener("mousemove", function(e) {
-        sliderTooltip.style.left = `${(e.offsetX / this.offsetWidth) * 100}%`;
+        let percent = (e.offsetX / this.offsetWidth) * 100;
+        // Ограничиваем процент в пределах 0-100
+        percent = Math.max(0, Math.min(100, percent));
+        const pages = Math.round((percent / 100) * totalPages);
+        sliderTooltip.textContent = pages;
+        sliderTooltip.style.left = `${percent}%`;
     });
 
     progressSlider.addEventListener("mouseenter", function() {
@@ -82,47 +95,59 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     decreaseBtn.addEventListener("click", function() {
-        let newValue = parseInt(progressSlider.value) - 5;
-        if (newValue < 0) newValue = 0;
-        progressSlider.value = newValue;
-        updateProgress(newValue);
-        sliderTooltip.textContent = `${newValue}%`;
-        createSparkles(progressFill);
+        let newPages = parseInt(currentPageEl.textContent) - 1;
+        newPages = Math.max(0, newPages); // Не позволяем уйти ниже 0
+        progressSlider.value = newPages;
+        updateProgress(newPages, true);
+        sliderTooltip.textContent = newPages;
     });
 
     increaseBtn.addEventListener("click", function() {
-        let newValue = parseInt(progressSlider.value) + 5;
-        if (newValue > 100) newValue = 100;
-        progressSlider.value = newValue;
-        updateProgress(newValue);
-        sliderTooltip.textContent = `${newValue}%`;
-        createSparkles(progressFill);
+        let newPages = parseInt(currentPageEl.textContent) + 1;
+        newPages = Math.min(totalPages, newPages); // Не позволяем превысить totalPages
+        progressSlider.value = newPages;
+        updateProgress(newPages, true);
+        sliderTooltip.textContent = newPages;
+    });
+
+    pageInput.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+            updatePagesBtn.click();
+        }
     });
 
     updatePagesBtn.addEventListener("click", function() {
-        const pages = parseInt(pageInput.value) || 0;
-        if (pages < 0) {
-            pageInput.value = 0;
-            updateProgress(0);
-        } else if (pages > totalPages) {
-            pageInput.value = totalPages;
-            updateProgress(100);
-        } else {
-            const percentage = Math.round((pages / totalPages) * 100);
-            updateProgress(percentage);
-            progressSlider.value = percentage;
-        }
-        createSparkles(progressFill);
+        let pages = parseInt(pageInput.value) || 0;
+        pages = Math.max(0, Math.min(totalPages, pages));
+        pageInput.value = pages;
+        progressSlider.value = pages;
+        updateProgress(pages, true);
     });
+
+    // Функция обновления прогресса
+    function updateProgress(pagesRead, showSparkles) {
+        // Ограничиваем значение между 0 и totalPages
+        pagesRead = Math.max(0, Math.min(totalPages, pagesRead));
+        const percentage = (pagesRead / totalPages) * 100;
+        const roundedPercentage = Math.round(percentage * 10) / 10; // Один знак после запятой
+
+        progressFill.style.width = percentage + "%";
+        progressText.textContent = roundedPercentage + "%";
+        currentPageEl.textContent = pagesRead;
+        pageInput.value = pagesRead;
+        progressSlider.value = pagesRead; // Обновляем значение слайдера
+
+        localStorage.setItem(`bookProgress_${bookId}`, pagesRead);
+
+        if (showSparkles && pagesRead > 0) {
+            createSparkles(progressFill);
+        }
+    }
 
     // Функция форматирования описания книги
     function formatBookDescription(element) {
         let text = element.textContent.trim();
-
-        // Удаляем лишние пробелы и переносы
         text = text.replace(/\s+/g, ' ');
-
-        // Разбиваем на абзацы по точкам (кроме сокращений)
         text = text.replace(/([^A-ZА-Я]\.)\s+/g, '$1\n\n');
         text = text.replace(/\n+/g, '\n').trim();
 
@@ -138,18 +163,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         element.innerHTML = formattedText;
-    }
-
-    function updateProgress(percentage) {
-        percentage = Math.min(100, Math.max(0, percentage));
-        const pagesRead = Math.round((percentage / 100) * totalPages);
-
-        progressFill.style.width = percentage + "%";
-        document.getElementById("progress-text").textContent = percentage + "%";
-        currentPageEl.textContent = pagesRead;
-        pageInput.value = pagesRead;
-
-        localStorage.setItem(`bookProgress_${bookId}`, percentage);
     }
 
     function updateStatusButton(status) {
@@ -177,26 +190,30 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function createSparkles(container) {
         const sparklesContainer = container.querySelector(".progress-bar-sparkles");
-        if (sparklesContainer) {
-            sparklesContainer.innerHTML = "";
+        if (!sparklesContainer) return;
 
-            const width = parseInt(container.style.width) || 0;
-            if (width > 0) {
-                for (let i = 0; i < 5; i++) {
-                    const sparkle = document.createElement("div");
-                    sparkle.className = "sparkle";
-                    sparkle.style.left = `${Math.random() * width}%`;
-                    sparkle.style.top = `${Math.random() * 100}%`;
-                    sparkle.style.width = `${Math.random() * 4 + 2}px`;
-                    sparkle.style.height = sparkle.style.width;
-                    sparkle.style.animationDelay = `${Math.random() * 2}s`;
-                    sparklesContainer.appendChild(sparkle);
-                }
+        sparklesContainer.innerHTML = "";
+        const width = parseFloat(container.style.width) || 0;
+
+        if (width > 0) {
+            for (let i = 0; i < 5; i++) {
+                const sparkle = document.createElement("div");
+                sparkle.className = "sparkle";
+                sparkle.style.left = `${Math.random() * width}%`;
+                sparkle.style.top = `${Math.random() * 100}%`;
+                sparkle.style.width = `${Math.random() * 4 + 2}px`;
+                sparkle.style.height = sparkle.style.width;
+                sparkle.style.animationDelay = `${Math.random() * 2}s`;
+                sparklesContainer.appendChild(sparkle);
             }
         }
     }
 
     function updateBookStatus(status) {
+        const currentPages = parseInt(currentPageEl.textContent);
+        const totalPages = parseInt(document.getElementById("total-pages").textContent) || 1;
+        const progress = Math.round((currentPages / totalPages) * 100);
+
         fetch("/update_book_status/", {
             method: "POST",
             headers: {
@@ -206,13 +223,18 @@ document.addEventListener("DOMContentLoaded", function() {
             body: JSON.stringify({
                 book_id: bookId,
                 status: status,
-                progress: progressSlider.value
+                progress: status === 'read' ? 100 : progress,
+                current_page: status === 'read' ? totalPages : currentPages,
+                total_pages: totalPages
             })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 showNotification(`Книга добавлена в "${getStatusName(status)}"`);
+                // Обновляем localStorage
+                localStorage.setItem(`bookStatus_${bookId}`, status);
+                localStorage.setItem(`bookProgress_${bookId}`, status === 'read' ? totalPages : currentPages);
             } else {
                 showNotification("Ошибка: " + data.message, true);
             }
@@ -262,8 +284,8 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // Стили для уведомлений
-const style = document.createElement("style");
-style.textContent = `
+const notificationStyle = document.createElement("style");
+notificationStyle.textContent = `
 .notification {
     position: fixed;
     bottom: 30px;
@@ -306,4 +328,4 @@ style.textContent = `
     content: "\\f06a";
 }
 `;
-document.head.appendChild(style);
+document.head.appendChild(notificationStyle);
