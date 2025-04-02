@@ -392,56 +392,65 @@
     box-shadow: 0 4px 8px rgba(199, 21, 133, 0.3);
 }
 
+/* Обновленные стили для слайдера */
 .slider-container {
     flex: 1;
     position: relative;
+    padding-top: 25px;
 }
 
 .progress-slider {
     width: 100%;
-    height: 6px;
+    height: 8px;
     -webkit-appearance: none;
-    background: #444;
-    border-radius: 3px;
+    background: linear-gradient(to right, #C71585, #C71585) no-repeat #444;
+    background-size: var(--progress-percent, 0%) 100%;
+    border-radius: 4px;
     outline: none;
     cursor: pointer;
+    transition: background-size 0.3s ease;
 }
 
 .progress-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: #f5f5f5;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    border: 2px solid #C71585;
 }
 
 .progress-slider::-webkit-slider-thumb:hover {
     background: #C71585;
-    transform: scale(1.2);
+    border-color: #f5f5f5;
+    transform: scale(1.1);
 }
 
 .slider-tooltip {
     position: absolute;
-    top: -35px;
+    top: -5px;
     left: 0;
     transform: translateX(-50%);
     background: #C71585;
     color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
     font-weight: bold;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
     pointer-events: none;
     white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(199, 21, 133, 0.3);
+    z-index: 10;
 }
 
-.progress-slider:hover + .slider-tooltip {
+.slider-container:hover .slider-tooltip {
     opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
 }
 
 /* Поле ввода страницы */
@@ -485,6 +494,50 @@
     transform: translateY(-2px);
 }
 
+/* Стили для уведомлений */
+.notification {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 14px 28px;
+    border-radius: 8px;
+    background: #2ecc71;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notification.error {
+    background: #e74c3c;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+.notification::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    display: inline-block;
+}
+
+.notification.success::before {
+    content: "\f00c";
+}
+
+.notification.error::before {
+    content: "\f06a";
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .book-container {
@@ -517,4 +570,108 @@
     .book-description {
         column-count: 1 !important;
     }
+
+    .notification {
+        width: 90%;
+        text-align: center;
+        padding: 12px 16px;
+    }
+}
+/* Стили для кнопки сохранения с анимацией */
+.page-input-btn {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.page-input-btn.pulse {
+    animation: pulse 1s ease;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(199, 21, 133, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(199, 21, 133, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(199, 21, 133, 0);
+    }
+}
+
+.page-input-btn:hover::before {
+    content: "Сохранить изменения";
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #C71585;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+/* Улучшенный слайдер */
+.slider-container {
+    flex: 1;
+    position: relative;
+    padding-top: 25px;
+}
+
+.progress-slider {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    background: #444;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #f5f5f5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    border: 2px solid #C71585;
+}
+
+.progress-slider::-webkit-slider-thumb:hover {
+    background: #C71585;
+    border-color: #f5f5f5;
+    transform: scale(1.1);
+}
+
+.slider-tooltip {
+    position: absolute;
+    top: -35px;
+    left: 0;
+    transform: translateX(-50%);
+    background: #C71585;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(199, 21, 133, 0.3);
+}
+
+.slider-container:hover .slider-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
 }

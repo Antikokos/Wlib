@@ -1,4 +1,18 @@
 document.addEventListener("DOMContentLoaded", function() {
+    // Проверяем авторизацию пользователя
+    const container = document.querySelector(".container");
+    if (!container) return;
+
+    const isAuthenticated = container.getAttribute("data-is-authenticated") === "true";
+    const bookId = container.getAttribute("data-book-id");
+
+    if (!isAuthenticated) {
+        // Скрываем элементы управления для неавторизованных пользователей
+        const controls = document.querySelectorAll(".book-status-container, .reading-progress");
+        controls.forEach(el => el.style.display = "none");
+        return;
+    }
+
     // Инициализация элементов
     const statusMainButton = document.getElementById("status-main-button");
     const statusMainText = document.getElementById("status-main-text");
@@ -10,49 +24,74 @@ document.addEventListener("DOMContentLoaded", function() {
     const pageInput = document.getElementById("page-input");
     const updatePagesBtn = document.getElementById("update-pages");
     const currentPageEl = document.getElementById("current-page");
-    const totalPages = parseInt(document.getElementById("total-pages").textContent) || 1;
+    const totalPagesEl = document.getElementById("total-pages");
+    const totalPages = totalPagesEl ? parseInt(totalPagesEl.textContent) || 1 : 1;
     const progressFill = document.getElementById("progress-fill");
     const bookDescription = document.getElementById("book-description");
     const progressText = document.getElementById("progress-text");
 
-    // const currentPages = parseInt(currentPageEl.textContent); // Текущие прочитанные страницы
-   
-    // const progress = Math.round((currentPages / totalPages) * 100); // Процент прогресса
+    // Проверяем, что все необходимые элементы существуют
+    if (!statusMainButton || !progressSlider || !progressFill) {
+        console.error("Не найдены необходимые элементы управления");
+        return;
+    }
 
     // Форматирование описания книги
     if (bookDescription) {
         formatBookDescription(bookDescription);
     }
 
-    // Загрузка сохраненного прогресса и статуса
-    const bookId = document.querySelector(".container").getAttribute("data-book-id");
-    const savedProgress = localStorage.getItem(`bookProgress_${bookId}`);
-    const savedStatus = localStorage.getItem(`bookStatus_${bookId}`);
-    const initialProgress = savedProgress ? Math.min(parseInt(savedProgress), totalPages) : 0;
+    // Инициализация слайдера
+    function initSlider() {
+        progressSlider.min = 0;
+        progressSlider.max = totalPages;
+        progressSlider.step = 1;
+        progressSlider.style.setProperty('--progress-percent', '0%');
 
-    // Установка начальных значений
-    progressSlider.min = 0;
-    progressSlider.max = totalPages;
-    progressSlider.value = initialProgress;
-    pageInput.min = 0;
-    pageInput.max = totalPages;
-    updateProgress(initialProgress, false);
+        progressSlider.addEventListener("input", function() {
+            const pages = Math.min(totalPages, Math.max(0, parseInt(this.value)));
+            updateProgress(pages, false); // Не сохраняем на сервер
+            updateSliderTooltip(pages);
+            animateUpdateButton();
+        });
 
-    if (savedStatus) {
-        updateStatusButton(savedStatus);
-        if (savedStatus === "read") {
-            createSparkles(progressFill);
-        }
+        progressSlider.addEventListener("change", function() {
+            animateUpdateButton();
+        });
     }
 
+    // Обновление подсказки слайдера
+    function updateSliderTooltip(pages) {
+        if (!sliderTooltip) return;
+        const thumbPosition = (pages / totalPages) * 100;
+        sliderTooltip.textContent = `${pages} стр.`;
+        sliderTooltip.style.left = `calc(${thumbPosition}% + (${8 - thumbPosition * 0.16}px))`;
+    }
+
+    // Анимация кнопки сохранения
+    function animateUpdateButton() {
+        if (!updatePagesBtn) return;
+
+        // Добавляем класс для анимации
+        updatePagesBtn.classList.add('pulse');
+
+        // Удаляем класс через время, чтобы анимация повторялась
+        setTimeout(() => {
+            updatePagesBtn.classList.remove('pulse');
+        }, 1000);
+    }
+
+    // Загрузка данных с сервера
+    loadBookData();
+
     // Обработчики событий
-    statusMainButton.addEventListener("click", function(e) {
+    statusMainButton?.addEventListener("click", function(e) {
         e.stopPropagation();
         statusButtons.style.display = statusButtons.style.display === "flex" ? "none" : "flex";
     });
 
     document.addEventListener("click", function() {
-        statusButtons.style.display = "none";
+        if (statusButtons) statusButtons.style.display = "none";
     });
 
     document.querySelectorAll(".status-btn").forEach(button => {
@@ -60,143 +99,185 @@ document.addEventListener("DOMContentLoaded", function() {
             e.stopPropagation();
             const status = this.getAttribute("data-status");
             updateBookStatus(status);
-            updateStatusButton(status);
-            statusButtons.style.display = "none";
+            if (statusButtons) statusButtons.style.display = "none";
 
             if (status === "read") {
                 updateProgress(totalPages, true);
-                progressSlider.value = totalPages;
+                if (progressSlider) progressSlider.value = totalPages;
                 createSparkles(progressFill);
+                showNotification("Книга отмечена как прочитанная");
             }
         });
     });
 
-    progressSlider.addEventListener("input", function() {
-        let pages = parseInt(this.value);
-        // Ограничиваем значение между min и max
-        pages = Math.max(parseInt(this.min), Math.min(parseInt(this.max), pages));
-        this.value = pages; // Устанавливаем корректное значение обратно в слайдер
-        updateProgress(pages, true);
-        sliderTooltip.textContent = pages;
-        sliderTooltip.style.left = `${(pages / totalPages) * 100}%`;
-    });
+    if (decreaseBtn) {
+        decreaseBtn.addEventListener("click", function() {
+            let newPages = parseInt(currentPageEl.textContent) - 1;
+            newPages = Math.max(0, newPages);
+            if (progressSlider) progressSlider.value = newPages;
+            updateProgress(newPages, false);
+            animateUpdateButton();
+        });
+    }
 
-    progressSlider.addEventListener("mousemove", function(e) {
-        let percent = (e.offsetX / this.offsetWidth) * 100;
-        // Ограничиваем процент в пределах 0-100
-        percent = Math.max(0, Math.min(100, percent));
-        const pages = Math.round((percent / 100) * totalPages);
-        sliderTooltip.textContent = pages;
-        sliderTooltip.style.left = `${percent}%`;
-    });
+    if (increaseBtn) {
+        increaseBtn.addEventListener("click", function() {
+            let newPages = parseInt(currentPageEl.textContent) + 1;
+            newPages = Math.min(totalPages, newPages);
+            if (progressSlider) progressSlider.value = newPages;
+            updateProgress(newPages, false);
+            animateUpdateButton();
+        });
+    }
 
-    progressSlider.addEventListener("mouseenter", function() {
-        sliderTooltip.style.opacity = "1";
-    });
+    if (pageInput) {
+        pageInput.addEventListener("input", function() {
+            animateUpdateButton();
+        });
 
-    progressSlider.addEventListener("mouseleave", function() {
-        sliderTooltip.style.opacity = "0";
-    });
+        pageInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                updatePages();
+            }
+        });
+    }
 
-    decreaseBtn.addEventListener("click", function() {
-        let newPages = parseInt(currentPageEl.textContent) - 1;
-        newPages = Math.max(0, newPages); // Не позволяем уйти ниже 0
-        progressSlider.value = newPages;
-        updateProgress(newPages, true);
-        sliderTooltip.textContent = newPages;
-    });
+    if (updatePagesBtn) {
+        updatePagesBtn.addEventListener("click", updatePages);
+    }
 
-    increaseBtn.addEventListener("click", function() {
-        let newPages = parseInt(currentPageEl.textContent) + 1;
-        newPages = Math.min(totalPages, newPages); // Не позволяем превысить totalPages
-        progressSlider.value = newPages;
-        updateProgress(newPages, true);
-        sliderTooltip.textContent = newPages;
-    });
-
-    pageInput.addEventListener("keypress", function(e) {
-        if (e.key === "Enter") {
-            updatePagesBtn.click();
-        }
-    });
-
-    updatePagesBtn.addEventListener("click", function() {
+    function updatePages() {
         let pages = parseInt(pageInput.value) || 0;
         pages = Math.max(0, Math.min(totalPages, pages));
-        pageInput.value = pages;
-        progressSlider.value = pages;
         updateProgress(pages, true);
-    });
-
-    function getCSRFToken() {
-        return document.getElementById("csrf_token").value;
+        showNotification("Прогресс обновлен");
     }
-    
+
+    // Функция загрузки данных книги
+    function loadBookData() {
+        fetch(`/get_book_status/?book_id=${bookId}`, {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+        })
+        .then(data => {
+            if (data.exists) {
+                updateStatusButton(data.status);
+                updateProgress(data.progress, false);
+
+                if (data.status === "read" && progressFill) {
+                    createSparkles(progressFill);
+                }
+            } else {
+                updateStatusButton("");
+                updateProgress(0, false);
+            }
+            initSlider();
+        })
+        .catch(error => {
+            console.error("Ошибка загрузки данных:", error);
+            showNotification("Ошибка загрузки данных книги", true);
+        });
+    }
+
+    // Функция обновления прогресса
+    function updateProgress(pagesRead, saveToServer) {
+        pagesRead = Math.max(0, Math.min(totalPages, pagesRead));
+        const percentage = (pagesRead / totalPages) * 100;
+        const roundedPercentage = Math.round(percentage * 10) / 10;
+
+        progressFill.style.width = percentage + "%";
+        progressText.textContent = roundedPercentage + "%";
+        currentPageEl.textContent = pagesRead;
+        if (pageInput) pageInput.value = pagesRead;
+        if (progressSlider) {
+            progressSlider.value = pagesRead;
+            progressSlider.style.setProperty('--progress-percent', `${percentage}%`);
+        }
+        updateSliderTooltip(pagesRead);
+
+        if (saveToServer) {
+            saveProgressToServer(pagesRead);
+        }
+
+        if (saveToServer && pagesRead > 0) {
+            createSparkles(progressFill);
+        }
+    }
+
+    // Функция сохранения прогресса на сервере
     function saveProgressToServer(pagesRead) {
-        const percentage = (pagesRead / totalPages) * 100
+        const percentage = (pagesRead / totalPages) * 100;
         fetch("/update-progress/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": getCSRFToken(), // 🔐 Передаём CSRF-токен
+                "X-CSRFToken": getCSRFToken(),
             },
             body: JSON.stringify({
                 book_id: bookId,
                 progress: pagesRead,
-                progress_percent: percentage, // Передаём процент прогресса
+                progress_percent: percentage,
             }),
         })
         .then(response => response.json())
         .then(data => {
-            if (data.status === "success") {
-                console.log("Прогресс сохранён:", data.progress);
-            } else {
+            if (data.status !== "success") {
                 console.error("Ошибка сохранения:", data.message);
+                showNotification("Ошибка сохранения прогресса", true);
             }
         })
-        .catch(error => console.error("Ошибка запроса:", error));
-    }
-
-    // Функция обновления прогресса
-    function updateProgress(pagesRead, showSparkles) {
-        pagesRead = Math.max(0, Math.min(totalPages, pagesRead));
-        const percentage = (pagesRead / totalPages) * 100;
-        const roundedPercentage = Math.round(percentage * 10) / 10;
-    
-        progressFill.style.width = percentage + "%";
-        progressText.textContent = roundedPercentage + "%";
-        currentPageEl.textContent = pagesRead;
-        pageInput.value = pagesRead;
-        progressSlider.value = pagesRead;
-    
-        localStorage.setItem(`bookProgress_${bookId}`, pagesRead);
-        saveProgressToServer(pagesRead); // 📌 Добавлено!
-    
-        if (showSparkles && pagesRead > 0) {
-            createSparkles(progressFill);
-        }
-    }
-    
-
-    // Функция форматирования описания книги
-    function formatBookDescription(element) {
-        let text = element.textContent.trim();
-        text = text.replace(/\s+/g, ' ');
-        text = text.replace(/([^A-ZА-Я]\.)\s+/g, '$1\n\n');
-        text = text.replace(/\n+/g, '\n').trim();
-
-        const paragraphs = text.split('\n').filter(p => p.length > 0);
-        let formattedText = '';
-
-        paragraphs.forEach((para, index) => {
-            if (index === 0) {
-                formattedText += `<p class="first-para">${para}</p>`;
-            } else {
-                formattedText += `<p>${para}</p>`;
-            }
+        .catch(error => {
+            console.error("Ошибка запроса:", error);
+            showNotification("Ошибка соединения с сервером", true);
         });
+    }
 
-        element.innerHTML = formattedText;
+    // Функция обновления статуса книги
+    function updateBookStatus(status) {
+        const currentPages = parseInt(currentPageEl.textContent);
+        const progress = Math.round((currentPages / totalPages) * 100);
+
+        fetch("/update_book_status/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify({
+                book_id: bookId,
+                status: status,
+                progress: status === 'read' ? totalPages : currentPages,
+                progress_percent: status === 'read' ? 100 : progress
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateStatusButton(status);
+                showNotification(`Книга добавлена в "${getStatusName(status)}"`);
+
+                if (status === 'read') {
+                    updateProgress(totalPages, false);
+                    createSparkles(progressFill);
+                }
+            } else {
+                showNotification("Ошибка: " + data.message, true);
+            }
+        })
+        .catch(error => {
+            console.error("Ошибка:", error);
+            showNotification("Произошла ошибка", true);
+        });
+    }
+
+    // Вспомогательные функции
+    function getCSRFToken() {
+        return document.querySelector("[name=csrfmiddlewaretoken]").value;
     }
 
     function updateStatusButton(status) {
@@ -218,8 +299,26 @@ document.addEventListener("DOMContentLoaded", function() {
             default:
                 statusMainText.textContent = "Добавить в мои книги";
         }
+    }
 
-        localStorage.setItem(`bookStatus_${bookId}`, status);
+    function formatBookDescription(element) {
+        let text = element.textContent.trim();
+        text = text.replace(/\s+/g, ' ');
+        text = text.replace(/([^A-ZА-Я]\.)\s+/g, '$1\n\n');
+        text = text.replace(/\n+/g, '\n').trim();
+
+        const paragraphs = text.split('\n').filter(p => p.length > 0);
+        let formattedText = '';
+
+        paragraphs.forEach((para, index) => {
+            if (index === 0) {
+                formattedText += `<p class="first-para">${para}</p>`;
+            } else {
+                formattedText += `<p>${para}</p>`;
+            }
+        });
+
+        element.innerHTML = formattedText;
     }
 
     function createSparkles(container) {
@@ -243,43 +342,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    function updateBookStatus(status) {
-        const currentPages = parseInt(currentPageEl.textContent);
-        const totalPages = parseInt(document.getElementById("total-pages").textContent) || 1;
-        const progress = Math.round((currentPages / totalPages) * 100);
-    
-        fetch("/update_book_status/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCSRFToken(),  // Используем CSRF-токен из hidden input
-            },
-            body: JSON.stringify({
-                book_id: bookId,
-                status: status,
-                progress: status === 'read' ? totalPages : currentPages,
-                current_page: status === 'read' ? totalPages : currentPages, // Передаем текущую страницу
-                progress_percent: status === 'read' ? 100 : progress // Передаем прогресс в процентах
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(`Книга добавлена в "${getStatusName(status)}"`);
-                // Обновляем localStorage
-                localStorage.setItem(`bookStatus_${bookId}`, status);
-                localStorage.setItem(`bookProgress_${bookId}`, status === 'read' ? totalPages : currentPages);
-            } else {
-                showNotification("Ошибка: " + data.message, true);
-            }
-        })
-        .catch(error => {
-            console.error("Ошибка:", error);
-            showNotification("Произошла ошибка", true);
-        });
-    }
-    
-
     function getStatusName(status) {
         const names = {
             "reading": "Читаю",
@@ -302,50 +364,3 @@ document.addEventListener("DOMContentLoaded", function() {
         }, 3000);
     }
 });
-
-// Стили для уведомлений
-const notificationStyle = document.createElement("style");
-notificationStyle.textContent = `
-.notification {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 14px 28px;
-    border-radius: 8px;
-    background: #2ecc71;
-    color: white;
-    font-size: 16px;
-    font-weight: 500;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    opacity: 0;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.notification.error {
-    background: #e74c3c;
-}
-
-.notification.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-10px);
-}
-
-.notification::before {
-    font-family: "Font Awesome 6 Free";
-    font-weight: 900;
-}
-
-.notification.success::before {
-    content: "\\f00c";
-}
-
-.notification.error::before {
-    content: "\\f06a";
-}
-`;
-document.head.appendChild(notificationStyle);

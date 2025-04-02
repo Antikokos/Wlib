@@ -55,6 +55,7 @@ def get_books_by_genre(genre, max_results=40):
         logger.error(f"Ошибка при запросе книг по жанру {genre}: {e}")
         return []
 
+
 def home(request):
     """Главная страница с книгами по жанрам"""
     context = {
@@ -64,6 +65,7 @@ def home(request):
         'romance_books': get_books_by_genre('romance'),
     }
     return render(request, 'books/home.html', context)
+
 
 def search(request):
     """Поиск книг"""
@@ -105,42 +107,69 @@ def search(request):
         logger.error(f"Ошибка при поиске книг: {e}")
         return render(request, 'books/search.html', {'books': [], 'query': query})
 
+
 def book_detail(request, book_id):
     """Детальная страница книги"""
     cache_key = f'book_{book_id}'
     cached_data = cache.get(cache_key)
 
     if cached_data:
-        return render(request, 'books/book_detail.html', {'book': cached_data})
+        book_data = cached_data
+    else:
+        url = f'https://www.googleapis.com/books/v1/volumes/{book_id}?key={API_KEY}'
 
-    url = f'https://www.googleapis.com/books/v1/volumes/{book_id}?key={API_KEY}'
+        try:
+            response = requests.get(url, timeout=API_TIMEOUT)
 
-    try:
-        response = requests.get(url, timeout=API_TIMEOUT)
+            if response.status_code == 404:
+                raise Http404("Книга не найдена")
 
-        if response.status_code == 404:
-            raise Http404("Книга не найдена")
+            response.raise_for_status()
+            book = response.json()
 
-        response.raise_for_status()
-        book = response.json()
+            book_data = {
+                'id': book['id'],
+                'title': book['volumeInfo'].get('title', 'Без названия'),
+                'authors': ', '.join(book['volumeInfo'].get('authors', ['Неизвестные авторы'])),
+                'publisher': book['volumeInfo'].get('publisher', 'Не указан'),
+                'page_count': book['volumeInfo'].get('pageCount', 0),
+                'published_date': book['volumeInfo'].get('publishedDate', 'Не указан'),
+                'thumbnail': book['volumeInfo'].get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
+                'description': book['volumeInfo'].get('description', 'Описание отсутствует'),
+            }
 
-        book_data = {
-            'id': book['id'],
-            'title': book['volumeInfo'].get('title', 'Без названия'),
-            'authors': ', '.join(book['volumeInfo'].get('authors', ['Неизвестные авторы'])),
-            'publisher': book['volumeInfo'].get('publisher', 'Не указан'),
-            'page_count': book['volumeInfo'].get('pageCount', 0),
-            'published_date': book['volumeInfo'].get('publishedDate', 'Не указан'),
-            'thumbnail': book['volumeInfo'].get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
-            'description': book['volumeInfo'].get('description', 'Описание отсутствует'),
-        }
+            cache.set(cache_key, book_data, 86400)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Ошибка при получении деталей книги {book_id}: {e}")
+            raise Http404("Не удалось загрузить информацию о книге")
 
-        cache.set(cache_key, book_data, 86400)
-        return render(request, 'books/book_detail.html', {'book': book_data})
+    # Проверяем статус книги для текущего пользователя
+    user_book_data = {
+        'has_book': False,
+        'status': '',
+        'progress': 0,
+        'progress_percent': 0
+    }
 
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Ошибка при получении деталей книги {book_id}: {e}")
-        raise Http404("Не удалось загрузить информацию о книге")
+    if request.user.is_authenticated:
+        try:
+            user_book = UserBook.objects.get(user=request.user, book_id=book_id)
+            user_book_data = {
+                'has_book': True,
+                'status': user_book.status,
+                'progress': user_book.progress,
+                'progress_percent': user_book.progress_percent
+            }
+        except UserBook.DoesNotExist:
+            pass
+
+    context = {
+        'book': book_data,
+        'user_book': user_book_data,
+        'is_authenticated': request.user.is_authenticated
+    }
+    return render(request, 'books/book_detail.html', context)
+
 
 class RegisterView(FormView):
     """Регистрация пользователя"""
@@ -152,9 +181,9 @@ class RegisterView(FormView):
         form.save()
         return super().form_valid(form)
 
+
 @login_required
 @csrf_protect
-
 def update_progress(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -162,24 +191,42 @@ def update_progress(request):
         progress = data.get("progress")
         progress_percent = data.get('progress_percent', 0)
 
-        if request.user.is_authenticated:
-            try:
-                user_book = UserBook.objects.get(user=request.user, book_id=book_id)
-                user_book.progress = progress
-                user_book.progress_percent = progress_percent
-                user_book.save()
-                return JsonResponse({"status": "success", "progress": progress, "progress_percent": progress_percent})
-            except UserBook.DoesNotExist:
-                return JsonResponse({"status": "error", "message": "Книга не найдена в вашем списке"}, status=404)
-        else:
-            return JsonResponse({"status": "error", "message": "Вы не авторизованы"}, status=403)
-    
-    return JsonResponse({"status": "error", "message": "Неверный запрос"}, status=400)
+        try:
+            user_book = UserBook.objects.get(user=request.user, book_id=book_id)
+            user_book.progress = progress
+            user_book.progress_percent = progress_percent
+            user_book.save()
 
+            # Очищаем кэш
+            cache.delete(f'profile_book_{book_id}')
+            cache.delete(f'book_{book_id}')
+
+            return JsonResponse({
+                "status": "success",
+                "progress": progress,
+                "progress_percent": progress_percent
+            })
+        except UserBook.DoesNotExist:
+            return JsonResponse({
+                "status": "error",
+                "message": "Книга не найдена в вашем списке"
+            }, status=404)
+
+    return JsonResponse({
+        "status": "error",
+        "message": "Неверный запрос"
+    }, status=400)
+
+
+@login_required
+@csrf_protect
 def update_book_status(request):
     """Обновление статуса книги для пользователя"""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'message': 'Неверный метод запроса'}, status=405)
+        return JsonResponse({
+            'success': False,
+            'message': 'Неверный метод запроса'
+        }, status=405)
 
     try:
         data = json.loads(request.body)
@@ -189,31 +236,123 @@ def update_book_status(request):
         progress_percent = data.get('progress_percent', 0)
 
         if not book_id or not status:
-            return JsonResponse({'success': False, 'message': 'Недостаточно данных'}, status=400)
+            return JsonResponse({
+                'success': False,
+                'message': 'Недостаточно данных'
+            }, status=400)
 
         # Обновляем или создаем запись
         UserBook.objects.update_or_create(
             user=request.user,
             book_id=book_id,
-            defaults={'status': status, 'progress': progress, 'progress_percent': progress_percent}
+            defaults={
+                'status': status,
+                'progress': progress,
+                'progress_percent': progress_percent
+            }
         )
 
-        # Очищаем кэш для этой книги в профиле
+        # Очищаем кэш
         cache.delete(f'profile_book_{book_id}')
+        cache.delete(f'book_{book_id}')
 
-        return JsonResponse({'success': True, 'message': 'Статус обновлен'})
+        return JsonResponse({
+            'success': True,
+            'message': 'Статус обновлен'
+        })
 
     except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'message': 'Неверный формат данных'}, status=400)
+        return JsonResponse({
+            'success': False,
+            'message': 'Неверный формат данных'
+        }, status=400)
     except Exception as e:
         logger.error(f"Ошибка при обновлении статуса книги: {e}")
-        return JsonResponse({'success': False, 'message': 'Внутренняя ошибка сервера'}, status=500)
+        return JsonResponse({
+            'success': False,
+            'message': 'Внутренняя ошибка сервера'
+        }, status=500)
 
+
+@login_required
+@csrf_protect
+def remove_book(request):
+    """Удаление книги из профиля пользователя"""
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'message': 'Неверный метод запроса'
+        }, status=405)
+
+    try:
+        data = json.loads(request.body)
+        book_id = data.get('book_id')
+
+        if not book_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Не указан ID книги'
+            }, status=400)
+
+        # Удаляем книгу из профиля пользователя
+        deleted_count, _ = UserBook.objects.filter(
+            user=request.user,
+            book_id=book_id
+        ).delete()
+
+        if deleted_count > 0:
+            # Очищаем кэш
+            cache.delete(f'profile_book_{book_id}')
+            cache.delete(f'book_{book_id}')
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Книга удалена из профиля'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'Книга не найдена в вашем профиле'
+            }, status=404)
+
+    except Exception as e:
+        logger.error(f"Ошибка при удалении книги: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Ошибка при удалении'
+        }, status=500)
+
+
+@login_required
+def get_book_status(request):
+    """Получение статуса книги для текущего пользователя"""
+    book_id = request.GET.get('book_id')
+    if not book_id:
+        return JsonResponse({'exists': False})
+
+    try:
+        user_book = UserBook.objects.get(user=request.user, book_id=book_id)
+        return JsonResponse({
+            'exists': True,
+            'status': user_book.status,
+            'progress': user_book.progress,
+            'progress_percent': user_book.progress_percent
+        })
+    except UserBook.DoesNotExist:
+        return JsonResponse({'exists': False})
+
+
+@login_required
 def profile(request):
     """Профиль пользователя с его книгами"""
-    user_books = UserBook.objects.filter(user=request.user)
+    # Очищаем кэш профиля при загрузке
+    cache_keys = [f'profile_book_{book.book_id}' for book in
+                 UserBook.objects.filter(user=request.user)]
+    cache.delete_many(cache_keys)
 
+    user_books = UserBook.objects.filter(user=request.user)
     books_data = []
+
     for user_book in user_books:
         cache_key = f'profile_book_{user_book.book_id}'
         book_data = cache.get(cache_key)
@@ -233,6 +372,7 @@ def profile(request):
                         'status': user_book.status,
                         'progress': user_book.progress,
                         'progress_percent': user_book.progress_percent,
+                        'page_count': book['volumeInfo'].get('pageCount', 0),  # Добавляем общее количество страниц
                     }
                     cache.set(cache_key, book_data, 86400)
             except requests.exceptions.RequestException:
@@ -249,7 +389,6 @@ def profile(request):
     }
 
     return render(request, 'books/profile.html', books_by_status)
-
 def logout_view(request):
     """Выход из системы"""
     logout(request)
