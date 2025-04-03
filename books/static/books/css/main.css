@@ -43,7 +43,7 @@ h1, h2, h3 {
 .search-box {
     display: flex;
     align-items: center;
-    background: black !important;
+    background: #1d1f21 !important;
     height: 40px;
     border-radius: 40px;
     padding-left: 15px;
@@ -75,13 +75,13 @@ h1, h2, h3 {
 .search-box .search-txt:-webkit-autofill:focus,
 .search-box .search-txt:-webkit-autofill:active {
     -webkit-text-fill-color: white !important;
-    -webkit-box-shadow: 0 0 0px 1000px black inset !important;
+    -webkit-box-shadow: 0 0 0px 1000px #1d1f21 inset !important;
     transition: background-color 5000s ease-in-out 0s;
 }
 
 .search-box .search-txt:-moz-autofill {
     color: white !important;
-    background-color: black !important;
+    background-color: #1d1f21 !important;
 }
 
 /* Кнопка пользователя */

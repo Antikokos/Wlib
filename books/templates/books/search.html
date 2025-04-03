@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
 {% block title %}
 Поиск: {{ query }}
 {% endblock %}
@@ -10,15 +9,10 @@
     <link rel="stylesheet" href="{% static 'books/css/search.css' %}">
 {% endblock %}
 
-
 {% block content %}
-
 <div class="container">
-    
     <div class="search-header">
         <h2 style="width: 70%;" id="result-title">Результаты поиска для "{{ query }}"</h2>
-
-
         <div class="sort-container" id="sort-container">
             <button class="reverse-button" onclick="reverseBooks()">
                 <i class="fa fa-sync-alt"></i>
@@ -30,8 +24,41 @@
             <button class="sort-button" onclick="sortBooks()">Сортировать</button>
         </div>
     </div>
+    
     <div class="book-container" id="book-container">
-        {% for book in books %}
+        {# Первые 10 книг отображаем сразу #}
+        {% for book in books|slice:":10" %}
+        <a style="text-decoration: none;" href="{% url 'book_detail' book.id %}">
+            <div class="book-card">
+                <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                <div class="book-info">
+                    <h3>{{ book.title }}</h3>
+                    <p><span class="bold-text">Автор(ы):</span> {{ book.authors }}</p>
+                    <p><span class="bold-text">Издатель:</span> {{ book.publisher }}</p>
+                    <p><span class="bold-text">Кол-во страниц:</span> {{ book.page_count }}</p>
+                    <p><span class="bold-text">Год выхода:</span> {{ book.published_date }}</p>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    
+    {# Кнопка "Показать еще" #}
+    {% if total_books > 10 %}
+    <div class="load-more-container" style="text-align: center; margin: 20px 0;">
+        
+        <span id="books-count" style="color: white; margin-bottom: 10px;">
+            10/40
+        </span>
+        <button id="load-more" class="sort-button">Показать еще</button>
+        
+    </div>
+    {% endif %}
+
+    
+    {# Скрытые остальные книги #}
+    <div id="hidden-books" style="display: none;">
+        {% for book in books|slice:"10:" %}
         <a style="text-decoration: none;" href="{% url 'book_detail' book.id %}">
             <div class="book-card">
                 <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
@@ -47,8 +74,6 @@
         {% endfor %}
     </div>
 </div>
-
-    
 
 <script src="{% static 'books/js/main.js' %}"></script>
 <script src="{% static 'books/js/search.js' %}"></script>

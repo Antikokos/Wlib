@@ -36,7 +36,7 @@ body {
     position: relative;
 }
 
-/* Логотип */
+/* Логотип и название сайта */
 .logo-container {
     text-align: center;
     margin-bottom: 20px;
@@ -46,6 +46,12 @@ body {
     width: 200px;
     height: auto;
     margin-bottom: 10px;
+}
+
+.site-name {
+    font-size: 28px;
+    color: #C71585;
+    margin: 0;
 }
 
 /* Заголовок модального окна */
@@ -269,39 +275,12 @@ body {
 .fade-in {
     animation: fadeIn 0.3s ease;
 }
-/* Стили для проверки email */
-.email-checking::after {
-    content: '';
-    position: absolute;
-    right: 40px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #C71585;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    opacity: 0;
-    transition: opacity 0.3s;
+/* Логотип */
+.logo-link {
+    display: inline-block;
+    transition: transform 0.3s ease;
 }
 
-.email-checking.verifying::after {
-    opacity: 1;
-}
-
-@keyframes spin {
-    to { transform: translateY(-50%) rotate(360deg); }
-}
-
-/* Адаптивность */
-@media (max-width: 480px) {
-    .modal {
-        width: 90%;
-        padding: 30px 20px;
-    }
-
-    .input-group input {
-        width: 92%;
-    }
+.logo-link:hover {
+    transform: scale(1.05);
 }

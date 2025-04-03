@@ -31,11 +31,10 @@ SECRET_KEY = 'django-insecure-e&k))in6o&y6xqbh^waw^n!sn7yueci9eeh1p6*%!^w=_!8&52
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'wlib-production.up.railway.app',
-    '127.0.0.1',
-    'localhost',
+    'wlib-production.up.railway.app',  # Основной домен на Railway
+    '127.0.0.1',                       # Для локального тестирования
+    'localhost'                        # Для разработки
 ]
-
 
 # Application definition
 
@@ -52,6 +51,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -59,7 +59,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'mybooksite.urls'
