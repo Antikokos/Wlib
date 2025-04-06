@@ -124,92 +124,94 @@
              <section class="reading-progress"> <p>Информация о количестве страниц отсутствует, отслеживание прогресса недоступно.</p> </section>
             {% endif %}
 
-            <!-- Секция отзывов -->
-            <section class="book-reviews">
-                <h2 class="section-title">
-                    <i class="fas fa-comment-alt"></i>
-                    {% if total_reviews > 0 %}
-                        Отзывы читателей <span class="reviews-count">{{ total_reviews }}
-                        {% if total_reviews == 1 %}отзыв{% elif 2 <= total_reviews <= 4 %}отзыва{% else %}отзывов{% endif %}</span>
-                    {% else %}
-                        Будьте первым, кто оставит отзыв
-                    {% endif %}
-                </h2>
+<!-- Секция отзывов -->
+<section class="book-reviews">
+    <h2 class="section-title">
+        <i class="fas fa-comment-alt"></i>
+        {% if total_reviews > 0 %}
+            Отзывы читателей <span class="reviews-count">{{ total_reviews }}
+            {% if total_reviews == 1 %}отзыв{% elif 2 <= total_reviews <= 4 %}отзыва{% else %}отзывов{% endif %}</span>
+        {% else %}
+            Будьте первым, кто оставит отзыв
+        {% endif %}
+    </h2>
 
-                <div class="rating-summary">
-                    <div class="average-rating">
-                        <div class="rating-value">{{ average_rating|floatformat:1 }}</div>
-                        <div class="rating-stars">
-                            {% for i in "12345" %}
-                                <i class="fas fa-star{% if i|add:0 <= average_rating|floatformat:0 %}{% else %}-half-alt{% endif %}"></i>
-                            {% endfor %}
-                        </div>
-                        <div class="rating-count">{{ total_reviews }} оценок</div>
-                    </div>
-
-                    <div class="rating-bars">
-    {% for bar in rating_bars %}
-        <div class="rating-bar">
-            <span class="rating-label">{{ bar.stars }} звезда</span>
-            <div class="bar-container">
-                <div class="bar-fill" style="width: {{ bar.percent }}%"></div>
+    <div class="rating-summary">
+        <div class="average-rating">
+            <div class="rating-value">{{ average_rating|floatformat:1 }}</div>
+            <div class="rating-stars">
+                {% for i in "12345" %}
+                    <i class="fas fa-star{% if i|add:0 <= average_rating|floatformat:0 %}{% else %}-half-alt{% endif %}"></i>
+                {% endfor %}
             </div>
-            <span class="rating-count">{{ bar.count }}</span>
+            <div class="rating-count">{{ total_reviews }} оценок</div>
         </div>
-    {% endfor %}
-</div>
-                </div>
 
-                {% if user.is_authenticated %}
-                <div class="add-review">
-                    <h3>Ваш отзыв</h3>
-                    {% if user_review %}
-                        <p class="review-notice">Вы уже оставили отзыв с оценкой {{ user_review.get_rating_display }}</p>
-                    {% endif %}
-                    <form method="post" action="{% url 'add_review' book.id %}">
-                        {% csrf_token %}
-                        <div class="rating-select">
-                            <span>Ваша оценка:</span>
-                            <div class="stars">
-                                {% for i in "54321" %}
-                                    <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" {% if user_review and user_review.rating == i|add:0 %}checked{% endif %}>
-                                    <label for="star{{ i }}"><i class="fas fa-star"></i></label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <textarea name="text" placeholder="Поделитесь своими впечатлениями о книге..." rows="4">{% if user_review %}{{ user_review.text }}{% endif %}</textarea>
-                        <button type="submit" class="submit-review">Опубликовать отзыв</button>
-                    </form>
+        <div class="rating-bars">
+            {% for bar in rating_bars %}
+                <div class="rating-bar">
+                    <span class="rating-label">{{ bar.stars }} звезда</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: {{ bar.percent }}%"></div>
+                    </div>
+                    <span class="rating-count">{{ bar.count }}</span>
                 </div>
-                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
 
-                <div class="reviews-list">
-                    {% for review in reviews %}
-                        <div class="review">
-                            <div class="review-header">
-                                <div class="user-info">
-                                    <div class="avatar">{{ review.user.username|first|upper }}</div>
-                                    <div class="user-name">{{ review.user.username }}</div>
-                                </div>
-                                <div class="review-rating">
-                                    {% for i in "12345" %}
-                                        <i class="fas fa-star{% if i|add:0 <= review.rating %}{% else %}-half-alt{% endif %}"></i>
-                                    {% endfor %}
-                                </div>
-                                <div class="review-date">{{ review.created_at|timesince }} назад</div>
-                            </div>
-                            <div class="review-text">{{ review.text }}</div>
-                            <div class="review-actions">
-                                <button class="like-btn"><i class="far fa-thumbs-up"></i> Нравится <span>0</span></button>
-                                <button class="comment-btn"><i class="far fa-comment"></i> Комментировать</button>
-                                <button class="share-btn"><i class="fas fa-share"></i> Поделиться</button>
-                            </div>
-                        </div>
-                    {% empty %}
-                        <p class="no-reviews">Пока нет отзывов. Будьте первым!</p>
+    {% if user.is_authenticated %}
+    <div class="add-review">
+        <h3>Ваш отзыв</h3>
+        {% if user_review %}
+            <p class="review-notice">Вы уже оставили отзыв с оценкой {{ user_review.get_rating_display }}</p>
+        {% endif %}
+        <form method="post" action="{% url 'add_review' book.id %}">
+            {% csrf_token %}
+            <div class="rating-select">
+                <span>Ваша оценка:</span>
+                <div class="stars">
+                    {% for i in "54321" %}
+                        <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" {% if user_review and user_review.rating == i|add:0 %}checked{% endif %}>
+                        <label for="star{{ i }}"><i class="fas fa-star"></i></label>
                     {% endfor %}
                 </div>
-            </section>
+            </div>
+            <textarea name="text" placeholder="Поделитесь своими впечатлениями о книге..." rows="4">{% if user_review %}{{ user_review.text }}{% endif %}</textarea>
+            <button type="submit" class="submit-review">{% if user_review %}Обновить отзыв{% else %}Опубликовать отзыв{% endif %}</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="reviews-list">
+        {% for review in reviews %}
+            <div class="review {% if user.is_authenticated and review.user == user %}my-review{% endif %}">
+                <div class="review-header">
+                    <div class="user-info">
+                        <div class="avatar">{{ review.user.username|first|upper }}</div>
+                        <div class="user-name">{{ review.user.username }}</div>
+                    </div>
+                    <div class="review-rating">
+                        {% for i in "12345" %}
+                            <i class="fas fa-star{% if i|add:0 <= review.rating %}{% else %}-half-alt{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    <div class="review-date">{{ review.created_at|timesince }} назад</div>
+                </div>
+                <div class="review-text">{{ review.text }}</div>
+                {% if user.is_authenticated %}
+                <div class="review-actions">
+                    <button class="like-btn"><i class="far fa-thumbs-up"></i> Нравится <span>0</span></button>
+                    <button class="comment-btn"><i class="far fa-comment"></i> Комментировать</button>
+                    <button class="share-btn"><i class="fas fa-share"></i> Поделиться</button>
+                </div>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="no-reviews">Пока нет отзывов. Будьте первым!</p>
+        {% endfor %}
+    </div>
+</section>
         </main>
     </div>
 </div>

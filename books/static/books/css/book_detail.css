@@ -1,23 +1,26 @@
 /* Глобальные стили */
 :root {
-    --main-color: #C71585;
-    --main-color-light: #e0409f;
-    --bg-color: #121212;
-    --text-color: #f5f5f5;
-    --text-secondary: #bdc1c6;
-    --card-bg: rgba(25, 27, 31, 0.88);
-    --card-bg-light: rgba(35, 38, 43, 0.8);
-    --shadow-color: rgba(0, 0, 0, 0.4);
-    --border-color: rgba(245, 245, 245, 0.1);
-    --success-color: #2ecc71;
-    --error-color: #e74c3c;
-    --rating-color: #f39c12;
+    --main-color: #C71585;           /* Основной акцентный цвет (MediumVioletRed) */
+    --main-color-light: #e0409f;     /* Светлый вариант основного цвета */
+    --bg-color: #121212;             /* Цвет фона страницы */
+    --text-color: #f5f5f5;           /* Основной цвет текста */
+    --text-secondary: #bdc1c6;       /* Вторичный цвет текста */
+    --card-bg: rgba(25, 27, 31, 0.88); /* Фон карточек с прозрачностью */
+    --card-bg-light: rgba(35, 38, 43, 0.8); /* Светлый вариант фона карточек */
+    --shadow-color: rgba(0, 0, 0, 0.4); /* Цвет теней */
+    --border-color: rgba(245, 245, 245, 0.1); /* Цвет границ */
+    --success-color: #2ecc71;        /* Цвет успешных уведомлений */
+    --error-color: #e74c3c;          /* Цвет ошибок */
+    --rating-color: #f39c12;         /* Цвет рейтинга */
+    --review-bg: rgba(44, 47, 51, 0.6); /* Фон отзывов */
 }
 
+/* Плавная прокрутка страницы */
 html {
     scroll-behavior: smooth;
 }
 
+/* Основные стили страницы */
 body {
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     background-color: var(--bg-color);
@@ -27,7 +30,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Фон страницы */
+/* Размытый фон страницы с эффектом параллакса */
 #page-background {
     position: fixed;
     top: -10%;
@@ -42,7 +45,7 @@ body {
     transition: background-image 0.5s ease-in-out;
 }
 
-/* Основной контейнер */
+/* Основной контейнер с эффектом поднятия при наведении */
 .container {
     max-width: 1200px;
     margin: 40px auto;
@@ -60,14 +63,14 @@ body {
     transform: translateY(-5px);
 }
 
-/* Структура страницы */
+/* Разметка страницы с книгой */
 .book-container {
     display: flex;
     gap: 40px;
     margin-top: 20px;
 }
 
-/* Обложка книги */
+/* Секция с обложкой книги */
 .book-cover-section {
     width: 300px;
     flex-shrink: 0;
@@ -76,6 +79,7 @@ body {
     align-self: flex-start;
 }
 
+/* Контейнер обложки с эффектом поднятия */
 .book-cover-container {
     position: relative;
     width: 100%;
@@ -97,7 +101,7 @@ body {
     display: block;
 }
 
-/* Мета-информация */
+/* Мета-информация о книге */
 .book-meta {
     margin: 25px 0;
     display: grid;
@@ -105,6 +109,7 @@ body {
     gap: 12px;
 }
 
+/* Элементы мета-информации */
 .meta-item {
     display: flex;
     align-items: center;
@@ -128,12 +133,13 @@ body {
     text-align: center;
 }
 
-/* Кнопки статуса */
+/* Кнопки статуса чтения */
 .book-status-container {
     margin-top: 25px;
     position: relative;
 }
 
+/* Основная кнопка статуса */
 .status-main-button {
     width: 100%;
     padding: 15px;
@@ -156,6 +162,7 @@ body {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
+/* Варианты кнопок статуса */
 .status-main-button.reading {
     background: linear-gradient(135deg, #f39c12, #e67e22);
 }
@@ -168,6 +175,7 @@ body {
     background: linear-gradient(135deg, #2ecc71, #27ae60);
 }
 
+/* Выпадающее меню статусов */
 .status-buttons {
     display: none;
     flex-direction: column;
@@ -189,6 +197,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Кнопки в меню статусов */
 .status-btn {
     padding: 12px 20px;
     border-radius: 8px;
@@ -211,6 +220,7 @@ body {
     transition: color 0.2s ease;
 }
 
+/* Стили для разных типов кнопок статусов */
 .reading-button:hover {
     background-color: rgba(243, 156, 18, 0.2);
 }
@@ -271,11 +281,12 @@ body {
     font-size: 1.1em;
 }
 
-/* Детали книги */
+/* Секция с деталями книги */
 .book-details {
     flex-grow: 1;
 }
 
+/* Заголовок книги */
 .book-header {
     margin-bottom: 30px;
     padding-bottom: 20px;
@@ -290,6 +301,7 @@ body {
     font-weight: 700;
 }
 
+/* Автор книги */
 .author {
     font-size: 1.2rem;
     color: var(--text-secondary);
@@ -303,6 +315,7 @@ body {
     color: var(--main-color);
 }
 
+/* Информация о публикации */
 .publication-info {
     display: flex;
     align-items: center;
@@ -316,7 +329,7 @@ body {
     opacity: 0.7;
 }
 
-/* Секции */
+/* Стили для заголовков секций */
 .section-title {
     font-size: 1.4rem;
     color: var(--text-color);
@@ -368,6 +381,7 @@ body {
     text-indent: 1.8em;
 }
 
+/* Стиль для первой буквы первого абзаца */
 .book-description p.first-para::first-letter {
     font-size: 2.8em;
     font-weight: 700;
@@ -378,6 +392,7 @@ body {
     margin-top: 5px;
 }
 
+/* Двухколоночный макет для больших экранов */
 @media (min-width: 992px) {
     .book-description {
         column-count: 2;
@@ -385,7 +400,7 @@ body {
     }
 }
 
-/* Прогресс чтения */
+/* Секция прогресса чтения */
 .reading-progress {
     margin: 40px 0;
     background: var(--card-bg-light);
@@ -395,6 +410,7 @@ body {
     box-shadow: 0 8px 25px var(--shadow-color);
 }
 
+/* Визуализация прогресса */
 .progress-visualization {
     margin-bottom: 30px;
 }
@@ -404,6 +420,7 @@ body {
     margin-bottom: 15px;
 }
 
+/* Фоновая полоса прогресса */
 .progress-bar-bg {
     width: 100%;
     height: 18px;
@@ -414,6 +431,7 @@ body {
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Заполненная часть прогресса */
 .progress-bar-fill {
     height: 100%;
     border-radius: 9px;
@@ -423,6 +441,7 @@ body {
     overflow: hidden;
 }
 
+/* Анимация волны на прогресс-баре */
 .progress-bar-wave {
     position: absolute;
     top: -10px;
@@ -435,6 +454,7 @@ body {
     transform: translateY(-10px);
 }
 
+/* Эффект искр на прогресс-баре */
 .progress-bar-sparkles {
     position: absolute;
     top: 0;
@@ -463,6 +483,7 @@ body {
     100% { transform: scale(0); opacity: 0; }
 }
 
+/* Процент прогресса */
 .progress-percentage {
     position: absolute;
     right: 12px;
@@ -475,6 +496,7 @@ body {
     z-index: 2;
 }
 
+/* Отображение страниц */
 .pages-display {
     display: flex;
     align-items: baseline;
@@ -531,7 +553,7 @@ body {
     transform: scale(1.05) rotate(0deg);
 }
 
-/* Слайдер */
+/* Слайдер прогресса */
 .slider-container {
     flex: 1;
     position: relative;
@@ -569,6 +591,7 @@ body {
     transform: scale(1.15);
 }
 
+/* Подсказка для слайдера */
 .slider-tooltip {
     position: absolute;
     top: -5px;
@@ -593,7 +616,7 @@ body {
     transform: translateX(-50%) translateY(-15px);
 }
 
-/* Поле ввода страницы */
+/* Группа ввода страницы */
 .page-input-group {
     display: flex;
     gap: 12px;
@@ -620,6 +643,7 @@ body {
     outline: none;
 }
 
+/* Кнопка ввода страницы */
 .page-input-btn {
     padding: 0 22px;
     background: var(--main-color);
@@ -721,12 +745,13 @@ body {
     font-weight: normal;
 }
 
+/* Сводка рейтинга */
 .rating-summary {
     display: flex;
     gap: 40px;
     margin: 30px 0;
     padding: 20px;
-    background: rgba(44, 47, 51, 0.6);
+    background: var(--review-bg);
     border-radius: 10px;
 }
 
@@ -757,6 +782,7 @@ body {
     color: var(--text-secondary);
 }
 
+/* График распределения оценок */
 .rating-bars {
     flex: 1;
     display: flex;
@@ -790,10 +816,11 @@ body {
     border-radius: 5px;
 }
 
+/* Форма добавления отзыва */
 .add-review {
     margin: 30px 0;
     padding: 20px;
-    background: rgba(44, 47, 51, 0.6);
+    background: var(--review-bg);
     border-radius: 10px;
 }
 
@@ -809,6 +836,7 @@ body {
     margin-bottom: 15px;
 }
 
+/* Выбор рейтинга */
 .rating-select {
     display: flex;
     align-items: center;
@@ -843,8 +871,9 @@ body {
     color: var(--rating-color);
 }
 
+/* Поле ввода отзыва */
 .add-review textarea {
-    width: 100%;
+    width: 95.5%;
     padding: 15px;
     border-radius: 8px;
     border: 1px solid #4a4f56;
@@ -864,6 +893,7 @@ body {
     outline: none;
 }
 
+/* Кнопка отправки отзыва */
 .submit-review {
     padding: 12px 25px;
     background: var(--main-color);
@@ -882,14 +912,16 @@ body {
     box-shadow: 0 5px 12px rgba(199, 21, 133, 0.35);
 }
 
+/* Список отзывов */
 .reviews-list {
     margin-top: 30px;
 }
 
+/* Отдельный отзыв */
 .review {
     padding: 20px;
     margin-bottom: 20px;
-    background: rgba(44, 47, 51, 0.6);
+    background: var(--review-bg);
     border-radius: 10px;
     transition: transform 0.3s ease;
 }
@@ -898,6 +930,13 @@ body {
     transform: translateY(-3px);
 }
 
+/* Собственный отзыв пользователя */
+.review.my-review {
+    border-left: 4px solid var(--main-color);
+    background: rgba(44, 47, 51, 0.8);
+}
+
+/* Заголовок отзыва */
 .review-header {
     display: flex;
     align-items: center;
@@ -906,6 +945,7 @@ body {
     gap: 15px;
 }
 
+/* Информация о пользователе */
 .user-info {
     display: flex;
     align-items: center;
@@ -930,6 +970,7 @@ body {
     color: var(--text-color);
 }
 
+/* Рейтинг в отзыве */
 .review-rating {
     color: var(--rating-color);
     display: flex;
@@ -942,12 +983,14 @@ body {
     margin-left: auto;
 }
 
+/* Текст отзыва */
 .review-text {
     line-height: 1.6;
     color: var(--text-secondary);
     margin-bottom: 15px;
 }
 
+/* Действия с отзывом */
 .review-actions {
     display: flex;
     gap: 15px;
@@ -973,13 +1016,14 @@ body {
     font-size: 1em;
 }
 
+/* Сообщение об отсутствии отзывов */
 .no-reviews {
     text-align: center;
     color: var(--text-secondary);
     padding: 30px;
 }
 
-/* Адаптивность */
+/* Адаптивные стили */
 @media (max-width: 992px) {
     .book-container {
         flex-direction: column;

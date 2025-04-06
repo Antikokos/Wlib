@@ -157,6 +157,15 @@ def book_detail(request, book_id):
     total_reviews = reviews.count()
     average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
 
+    # Создаем статистику рейтингов
+    rating_stats = {
+        '5': reviews.filter(rating=5).count(),
+        '4': reviews.filter(rating=4).count(),
+        '3': reviews.filter(rating=3).count(),
+        '2': reviews.filter(rating=2).count(),
+        '1': reviews.filter(rating=1).count(),
+    }
+
     # Создаем rating_bars с предварительно вычисленными процентами
     rating_bars = []
     for stars in ['5', '4', '3', '2', '1']:
@@ -168,6 +177,7 @@ def book_detail(request, book_id):
             'percent': round(percent, 1)
         })
 
+    # Получаем отзыв текущего пользователя (если он авторизован)
     user_review = None
     if request.user.is_authenticated:
         user_review = BookReview.objects.filter(
@@ -179,16 +189,16 @@ def book_detail(request, book_id):
         'book': book_data,
         'user_book': user_book_data,
         'is_authenticated': request.user.is_authenticated,
-        'reviews': reviews[:10],
-        'rating_bars': rating_bars,  # Используем новый формат
+        'reviews': reviews[:10],  # Показываем последние 10 отзывов
+        'rating_bars': rating_bars,
         'total_reviews': total_reviews,
         'average_rating': round(average_rating, 1) if average_rating else 0,
         'user_review': user_review,
         'user_has_reviewed': user_review is not None,
         'reviews_exist': total_reviews > 0,
     }
-    return render(request, 'books/book_detail.html', context)
 
+    return render(request, 'books/book_detail.html', context)
 # ... (остальные функции остаются без изменений, начиная с @login_required def add_review и до конца файла)
 @login_required
 @csrf_protect

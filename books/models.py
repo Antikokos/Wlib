@@ -53,12 +53,13 @@ class BookReview(models.Model):
         (5, '5 - Отлично'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     book_id = models.CharField(max_length=255)
     rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES)
     text = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    likes = models.ManyToManyField(User, related_name='liked_reviews', blank=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -83,7 +84,7 @@ class BookReview(models.Model):
             )
             if response.status_code == 200:
                 title = response.json()['volumeInfo'].get('title', 'Без названия')
-                cache.set(cache_key, title, 86400)  # Кэшируем на 24 часа
+                cache.set(cache_key, title, 86400)
                 return title
         except Exception as e:
             logger.error(f"Ошибка при получении данных книги: {e}")
