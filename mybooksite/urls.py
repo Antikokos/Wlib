@@ -19,4 +19,5 @@ urlpatterns = [
     path("update-progress/", update_progress, name="update_progress"),
     path('get_book_status/', views.get_book_status, name='get_book_status'),
     path('remove_book/', views.remove_book, name='remove_book'),
+path('book/<str:book_id>/add_review/', views.add_review, name='add_review'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
