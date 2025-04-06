@@ -1,101 +1,271 @@
-/* Основные стили страницы книги */
+/* Глобальные стили и фон */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    background-color: #121212; /* Базовый фон на случай, если фон-картинка не загрузится */
+    color: #f5f5f5;
+    line-height: 1.6;
+    overflow-x: hidden; /* Предотвратить горизонтальный скролл из-за scale фона */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+#page-background {
+    position: fixed;
+    top: -5%; /* Немного увеличить, чтобы размытые края ушли за экран */
+    left: -5%;
+    width: 110%;
+    height: 110%;
+    z-index: -1; /* Поместить фон позади всего */
+    background-size: cover;
+    background-position: center center;
+    /* Эффекты: размытие + понижение яркости */
+    filter: blur(25px) brightness(0.6);
+    /* Масштабирование, чтобы скрыть возможные артефакты размытия по краям */
+    transform: scale(1.1);
+    /* Плавный переход, если фон меняется динамически */
+    transition: background-image 0.5s ease-in-out;
+}
+
+/* Основные стили страницы книги (ваш CSS) */
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 40px 20px;
-    color: #f5f5f5;
+    padding: 50px 25px; /* Немного увеличены отступы */
+    /* Полупрозрачный фон для читаемости контента поверх ЛЮБОГО размытого фона */
+    background-color: rgba(25, 27, 31, 0.88); /* Темный, почти непрозрачный фон */
+    position: relative; /* Для z-index */
+    z-index: 1; /* Чтобы быть над #page-background */
+    min-height: 100vh; /* Чтобы контейнер занимал высоту экрана */
+    border-radius: 10px; /* Небольшое скругление краев */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); /* Тень для выделения контейнера */
+    margin-top: 40px; /* Отступ сверху */
+    margin-bottom: 40px; /* Отступ снизу */
 }
 
 .book-container {
     display: flex;
     align-items: flex-start;
-    gap: 60px;
+    gap: 50px; /* Уменьшил gap */
     margin-top: 30px;
 }
 
 /* Секция с обложкой и статусом */
 .book-cover-section {
-    width: 350px;
+    width: 320px; /* Немного уменьшил */
     flex-shrink: 0;
-    position: relative;
+    position: sticky; /* Сделать обложку "липкой" при скролле */
+    top: 40px; /* Отступ сверху для липкого элемента */
 }
 
 .book-cover-container {
     width: 100%;
-    height: 500px;
+    aspect-ratio: 2 / 3; /* Использовать соотношение сторон вместо фикс. высоты */
+    height: auto; /* Высота авто */
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Усилена тень */
     transition: transform 0.3s ease;
     position: relative;
 }
 
 .book-cover-container:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px) scale(1.02); /* Эффект приподнятия */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
 
 .book-cover-container img {
+    display: block; /* Убрать лишний отступ под картинкой */
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.5s ease;
 }
 
+/* Новые стили для мета-информации */
+.book-meta {
+    margin: 25px 0; /* Увеличен отступ */
+    display: grid;
+    grid-template-columns: 1fr; /* Одна колонка для лучшей читаемости */
+    gap: 10px; /* Уменьшен gap */
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Увеличен gap */
+    font-size: 14px;
+    color: #d1d5db;
+    padding: 10px 14px; /* Увеличены отступы */
+    background: rgba(44, 47, 51, 0.75); /* Чуть более прозрачный фон */
+    border-radius: 8px; /* Скругление */
+    border-left: 3px solid #C71585; /* Акцентная линия */
+    transition: background-color 0.2s ease;
+}
+.meta-item:hover {
+     background: rgba(54, 57, 61, 0.9);
+}
+
+.meta-item i {
+    color: #C71585;
+    width: 18px; /* Увеличен размер иконки */
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* Стили для кнопки "Читать сейчас" */
+.read-now-button {
+    display: flex; /* Flex для иконки */
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(to right, #C71585, #e0409f); /* Скорректирован градиент */
+    color: white;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600; /* Увеличен вес */
+    margin-top: 20px; /* Отступ */
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(199, 21, 133, 0.3);
+    text-decoration: none; /* Убрать подчеркивание у ссылки */
+    border: none;
+    cursor: pointer;
+}
+
+.read-now-button:hover {
+    transform: translateY(-3px); /* Увеличен сдвиг */
+    box-shadow: 0 7px 22px rgba(199, 21, 133, 0.45); /* Усилена тень */
+    background: linear-gradient(to right, #a3126b, #c22f87); /* Скорректирован градиент ховера */
+}
+.read-now-button i {
+    font-size: 1.1em; /* Размер иконки в кнопке */
+}
+
+/* Обновленные стили для заголовка книги */
+.book-header {
+    margin-bottom: 35px; /* Увеличен отступ */
+    border-bottom: 1px solid rgba(245, 245, 245, 0.15); /* Линия чуть заметнее */
+    padding-bottom: 25px; /* Увеличен отступ */
+}
+
+.book-header h1 {
+    font-size: 2.4rem; /* Увеличен размер */
+    margin: 0 0 12px 0;
+    line-height: 1.3; /* Скорректирована высота строки */
+    color: #ffffff; /* Чистый белый для заголовка */
+    font-weight: 700; /* Жирнее */
+}
+
+.author {
+    font-size: 1.2rem; /* Увеличен размер */
+    color: #bdc1c6;
+    margin-bottom: 18px;
+    display: block;
+    font-weight: 500;
+}
+.author:hover {
+    color: #C71585; /* Акцент на авторе при наведении */
+    cursor: pointer; /* Указатель */
+}
+
+
+.publication-info {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Увеличен gap */
+    font-size: 0.95rem; /* Немного увеличен */
+    color: #9ca3af;
+    flex-wrap: wrap;
+}
+
+.separator {
+    opacity: 0.7; /* Сепаратор чуть заметнее */
+}
+
 /* Стили для блока статуса */
 .book-status-container {
-    margin-top: 20px;
+    margin-top: 25px; /* Увеличен отступ */
     position: relative;
 }
 
 .status-main-button {
-    background: linear-gradient(to right, #4a4a4a, #3a3a3a);
+    background: linear-gradient(to right, #4f545c, #3a3f44); /* Обновлен градиент */
     border: none;
     padding: 14px 25px;
     border-radius: 8px;
     color: white;
     font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
     width: 100%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between; /* Текст слева, иконка справа */
     gap: 10px;
 }
 
 .status-main-button.reading {
     background: linear-gradient(to right, #f39c12, #e67e22);
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
 }
 
 .status-main-button.want-to-read {
     background: linear-gradient(to right, #3498db, #2980b9);
+     box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
 }
 
 .status-main-button.read {
     background: linear-gradient(to right, #2ecc71, #27ae60);
+     box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
 }
 
 .status-main-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+/* Поворот стрелки при открытии */
+.status-main-button i {
+    transition: transform 0.3s ease;
+}
+.status-main-button:focus + .status-buttons i, /* Показываем стрелку вверх, когда кнопки видимы */
+.book-status-container:focus-within .status-main-button i { /* Для случая клика */
+    transform: rotate(180deg);
 }
 
+
 .status-buttons {
-    display: none;
+    display: none; /* Изначально скрыты */
     flex-direction: column;
     gap: 8px;
     margin-top: 10px;
     position: absolute;
     width: 100%;
     z-index: 10;
-    background: #2c2f33;
+    background: #31353b; /* Фон чуть темнее основного */
     border-radius: 8px;
     padding: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4); /* Усилена тень */
     border: 1px solid rgba(245, 245, 245, 0.1);
     animation: fadeIn 0.2s ease-out;
 }
+/* Показываем кнопки при фокусе на контейнере (альтернатива JS) или когда JS добавит display:flex */
+.book-status-container:focus-within .status-buttons {
+     /* display: flex; */ /* Можно раскомментировать, если JS не используется для показа */
+}
+
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }
@@ -113,100 +283,81 @@
     text-align: left;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px; /* Увеличен gap */
+    background: transparent; /* Убрал цветные фоны, используем ховер */
 }
 
 .status-btn i {
     width: 20px;
     text-align: center;
+    color: #bdc1c6; /* Серый цвет иконок по умолчанию */
+    transition: color 0.2s ease;
 }
 
-.reading-button {
-    background: linear-gradient(to right, #f39c12, #e67e22);
-}
-
+/* Ховеры с цветами */
 .reading-button:hover {
-    background: linear-gradient(to right, #e67e22, #d35400);
+    background-color: rgba(243, 156, 18, 0.2);
 }
-
-.want-to-read-button {
-    background: linear-gradient(to right, #3498db, #2980b9);
-}
+.reading-button:hover i { color: #f39c12; }
 
 .want-to-read-button:hover {
-    background: linear-gradient(to right, #2980b9, #1a6ea8);
+    background-color: rgba(52, 152, 219, 0.2);
 }
-
-.read-button {
-    background: linear-gradient(to right, #2ecc71, #27ae60);
-}
+.want-to-read-button:hover i { color: #3498db; }
 
 .read-button:hover {
-    background: linear-gradient(to right, #27ae60, #219653);
+    background-color: rgba(46, 204, 113, 0.2);
 }
+.read-button:hover i { color: #2ecc71; }
+
 
 /* Детали книги */
 .book-details {
     flex-grow: 1;
 }
 
-.book-details h1 {
-    font-size: 32px;
-    margin: 0 0 20px 0;
+/* Обновленные стили для секций */
+.section-title {
+    font-size: 1.4rem; /* Увеличен размер */
     color: #f5f5f5;
-    font-weight: 700;
-    line-height: 1.3;
-}
-
-.book-details p {
-    color: #d1d5db;
-    font-size: 18px;
-    line-height: 1.6;
-    margin: 0 0 15px 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(245, 245, 245, 0.1);
-}
-
-/* Стили для описания книги */
-.book-description-container {
-    margin: 30px 0;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(245, 245, 245, 0.1);
-}
-
-.description-title {
-    font-size: 22px;
-    color: #f5f5f5;
-    margin-bottom: 15px;
+    margin-bottom: 20px; /* Увеличен отступ */
     position: relative;
-    padding-left: 15px;
+    padding-left: 18px; /* Увеличен отступ для линии */
+    font-weight: 600;
 }
 
-.description-title::before {
+.section-title::before {
     content: '';
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 5px;
-    height: 22px;
+    width: 6px; /* Линия толще */
+    height: 26px; /* Линия выше */
     background: #C71585;
     border-radius: 3px;
 }
 
+/* Стили для описания книги */
+.book-description-container {
+    margin: 40px 0; /* Увеличены отступы */
+    padding-bottom: 30px; /* Увеличен отступ */
+    border-bottom: 1px solid rgba(245, 245, 245, 0.15); /* Линия чуть заметнее */
+}
+
 .book-description {
-    font-size: 17px;
-    line-height: 1.8;
+    font-size: 1.05rem; /* Немного увеличен основной текст */
+    line-height: 1.85; /* Увеличена высота строки */
     color: #d1d5db;
     text-align: justify;
     hyphens: auto;
-    column-count: 1;
-    column-gap: 40px;
+    column-count: 1; /* По умолчанию 1 колонка */
+    column-gap: 45px; /* Увеличен разрыв */
 }
 
 .book-description p {
-    margin-bottom: 1.2em;
-    line-height: 1.8;
+    margin-bottom: 1.3em; /* Увеличен отступ параграфа */
+    line-height: 1.85;
     text-align: justify;
     hyphens: auto;
     position: relative;
@@ -219,7 +370,7 @@
 }
 
 .book-description p:not(.first-para) {
-    text-indent: 1.5em;
+    text-indent: 1.8em; /* Увеличен отступ красной строки */
 }
 
 .book-description p:last-child {
@@ -228,64 +379,69 @@
 
 /* Стиль для первой буквы первого абзаца */
 .book-description p.first-para::first-letter {
-    font-size: 1.6em;
-    font-weight: bold;
+    font-size: 2.8em; /* Значительно увеличена */
+    font-weight: 700; /* Жирнее */
     color: #C71585;
-    line-height: 0.8;
-    padding-right: 2px;
+    line-height: 0.7; /* Скорректирована высота строки */
+    padding-right: 6px; /* Увеличен отступ справа */
+    float: left; /* Обтекание текстом */
+    margin-top: 5px; /* Небольшой сдвиг вниз для выравнивания */
+    margin-right: 4px; /* Отступ справа */
 }
 
 @media (min-width: 992px) {
     .book-description {
-        column-count: 2;
+        column-count: 2; /* 2 колонки на больших экранах */
     }
 }
 
 /* Прогресс-бар чтения */
 .reading-progress {
-    margin: 30px 0;
-    background: rgba(44, 47, 51, 0.7);
-    padding: 25px;
+    margin: 40px 0; /* Увеличены отступы */
+    background: rgba(35, 38, 43, 0.8); /* Чуть другой фон для выделения */
+    padding: 30px; /* Увеличены отступы */
     border-radius: 12px;
-    border-left: 4px solid #C71585;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    border-left: 5px solid #C71585; /* Акцентная линия толще */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); /* Усилена тень */
 }
 
 .progress-title {
-    font-size: 20px;
-    margin: 0 0 20px 0;
+    font-size: 1.25rem; /* Увеличен размер */
+    margin: 0 0 25px 0; /* Увеличен отступ */
     color: #f5f5f5;
     display: flex;
     align-items: center;
+    font-weight: 600;
 }
 
 .progress-icon {
-    margin-right: 12px;
+    margin-right: 14px; /* Увеличен отступ */
     color: #C71585;
+    font-size: 1.2em; /* Иконка чуть больше */
 }
 
 .progress-visualization {
-    margin-bottom: 25px;
+    margin-bottom: 30px; /* Увеличен отступ */
 }
 
 .progress-bar-container {
     position: relative;
-    margin-bottom: 15px;
+    margin-bottom: 18px; /* Увеличен отступ */
 }
 
 .progress-bar-bg {
     width: 100%;
-    height: 16px;
+    height: 18px; /* Сделан толще */
     background-color: #2c2f33;
-    border-radius: 8px;
+    border-radius: 9px; /* Скругление */
     position: relative;
     overflow: hidden;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); /* Усилена внутренняя тень */
 }
 
 .progress-bar-fill {
     height: 100%;
-    border-radius: 8px;
+    border-radius: 9px;
     background: linear-gradient(90deg, #C71585, #ff69b4);
     position: relative;
     transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
@@ -298,8 +454,8 @@
     left: 0;
     width: 100%;
     height: 20px;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.4) 0%, transparent 70%);
-    opacity: 0.6;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, transparent 70%);
+    opacity: 0.5;
     animation: wave 3s linear infinite;
     transform: translateY(-10px);
 }
@@ -318,6 +474,7 @@
     border-radius: 50%;
     opacity: 0;
     animation: sparkle 2s infinite;
+    box-shadow: 0 0 5px white; /* Добавлено свечение */
 }
 
 @keyframes wave {
@@ -327,171 +484,214 @@
 
 @keyframes sparkle {
     0% { transform: scale(0); opacity: 0; }
-    50% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1); opacity: 0.9; } /* Ярче в пике */
     100% { transform: scale(0); opacity: 0; }
 }
 
 .progress-percentage {
     position: absolute;
-    right: 10px;
+    right: 12px; /* Больше отступ */
     top: 50%;
     transform: translateY(-50%);
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px; /* Чуть больше */
+    font-weight: 600; /* Жирнее */
     color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); /* Усилена тень */
     z-index: 2;
 }
 
 .pages-display {
     display: flex;
-    align-items: center;
-    font-size: 18px;
+    align-items: baseline; /* Выровнять по базовой линии */
+    font-size: 1.1rem; /* Увеличен размер */
     color: #f5f5f5;
-    margin-top: 5px;
+    margin-top: 10px; /* Увеличен отступ */
 }
+.pages-display span { font-weight: 500;} /* Сделать цифры жирнее */
 
 .pages-separator {
-    margin: 0 8px;
+    margin: 0 10px; /* Увеличен отступ */
     color: #bdc1c6;
 }
 
 .pages-label {
     margin-left: 8px;
-    font-size: 15px;
-    color: #bdc1c6;
+    font-size: 0.9rem; /* Текст "страниц" чуть меньше */
+    color: #9ca3af; /* Серый цвет */
+    align-self: center; /* Выровнять по центру */
 }
 
 /* Элементы управления прогрессом */
 .progress-controls {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin: 20px 0;
+    gap: 18px; /* Увеличен gap */
+    margin: 25px 0; /* Увеличены отступы */
 }
 
 .progress-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px; /* Увеличен размер */
+    height: 44px; /* Увеличен размер */
     border-radius: 50%;
-    background: #2c2f33;
+    background: #31353b; /* Фон */
     color: #f5f5f5;
     border: none;
-    font-size: 14px;
+    font-size: 16px; /* Размер иконки */
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
 }
 
 .progress-btn:hover {
     background: #C71585;
-    transform: scale(1.1);
-    box-shadow: 0 4px 8px rgba(199, 21, 133, 0.3);
+    transform: scale(1.12) rotate(5deg); /* Добавлено вращение */
+    box-shadow: 0 5px 10px rgba(199, 21, 133, 0.35);
 }
+.progress-btn:active {
+    transform: scale(1.05) rotate(0deg); /* Эффект нажатия */
+}
+
 
 /* Обновленные стили для слайдера */
 .slider-container {
     flex: 1;
     position: relative;
-    padding-top: 25px;
+    padding-top: 25px; /* Место для тултипа */
 }
 
 .progress-slider {
     width: 100%;
-    height: 8px;
+    height: 10px; /* Толще слайдер */
     -webkit-appearance: none;
-    background: linear-gradient(to right, #C71585, #C71585) no-repeat #444;
-    background-size: var(--progress-percent, 0%) 100%;
-    border-radius: 4px;
+    appearance: none; /* Убрать стандартный вид */
+    background: #4a4f56; /* Фон трека */
+    border-radius: 5px; /* Скругление */
     outline: none;
     cursor: pointer;
-    transition: background-size 0.3s ease;
+    transition: background 0.3s ease;
+}
+/* Стилизация трека для Firefox */
+.progress-slider::-moz-range-track {
+    width: 100%;
+    height: 10px;
+    background: #4a4f56;
+    border-radius: 5px;
+    border: none;
 }
 
 .progress-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
+    appearance: none;
+    width: 24px; /* Увеличен размер */
+    height: 24px; /* Увеличен размер */
     border-radius: 50%;
     background: #f5f5f5;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    border: 2px solid #C71585;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); /* Усилена тень */
+    border: 3px solid #C71585; /* Утолщена рамка */
+    margin-top: -7px; /* Центрирование ползунка относительно трека */
+}
+.progress-slider::-moz-range-thumb { /* Для Firefox */
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #f5f5f5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    border: 3px solid #C71585;
 }
 
 .progress-slider::-webkit-slider-thumb:hover {
     background: #C71585;
     border-color: #f5f5f5;
-    transform: scale(1.1);
+    transform: scale(1.15); /* Увеличен ховер */
+}
+.progress-slider::-moz-range-thumb:hover { /* Для Firefox */
+    background: #C71585;
+    border-color: #f5f5f5;
+    transform: scale(1.15);
 }
 
 .slider-tooltip {
     position: absolute;
-    top: -5px;
-    left: 0;
+    top: -5px; /* Позиция над слайдером */
+    left: 50%; /* Центрирование по умолчанию */
     transform: translateX(-50%);
     background: #C71585;
     color: white;
-    padding: 6px 12px;
+    padding: 7px 14px; /* Увеличены отступы */
     border-radius: 20px;
     font-size: 13px;
     font-weight: bold;
-    opacity: 0;
+    opacity: 0; /* Скрыт по умолчанию */
     transition: opacity 0.2s ease, transform 0.2s ease;
-    pointer-events: none;
+    pointer-events: none; /* Не мешает кликам */
     white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(199, 21, 133, 0.3);
-    z-index: 10;
+    box-shadow: 0 4px 12px rgba(199, 21, 133, 0.4); /* Усилена тень */
+    z-index: 5;
 }
 
 .slider-container:hover .slider-tooltip {
     opacity: 1;
-    transform: translateX(-50%) translateY(-5px);
+    transform: translateX(-50%) translateY(-15px); /* Поднять выше при ховере */
 }
+
 
 /* Поле ввода страницы */
 .page-input-group {
     display: flex;
-    gap: 10px;
+    gap: 12px; /* Увеличен gap */
 }
 
 .page-input {
     flex: 1;
-    padding: 12px 15px;
-    border-radius: 6px;
-    border: 1px solid #444;
-    background: #2c2f33;
+    padding: 13px 16px; /* Увеличены отступы */
+    border-radius: 8px; /* Скругление */
+    border: 1px solid #4a4f56; /* Граница */
+    background: #2c2f33; /* Фон */
     color: #f5f5f5;
     font-size: 16px;
     transition: all 0.2s ease;
 }
+.page-input::placeholder {
+    color: #787f8a;
+}
 
 .page-input:focus {
     border-color: #C71585;
-    box-shadow: 0 0 0 2px rgba(199, 21, 133, 0.3);
+    box-shadow: 0 0 0 3px rgba(199, 21, 133, 0.3); /* Увеличена тень фокуса */
     outline: none;
 }
 
 .page-input-btn {
-    padding: 0 20px;
+    padding: 0 22px; /* Увеличены отступы */
     background: #C71585;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px; /* Скругление */
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    font-size: 1.2em; /* Иконка больше */
+    box-shadow: 0 3px 8px rgba(199, 21, 133, 0.25);
 }
 
 .page-input-btn:hover {
     background: #a3126b;
     transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(199, 21, 133, 0.35);
+}
+.page-input-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(199, 21, 133, 0.2);
 }
 
 /* Стили для уведомлений */
@@ -500,178 +700,154 @@
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 14px 28px;
+    padding: 16px 32px; /* Увеличены отступы */
     border-radius: 8px;
-    background: #2ecc71;
     color: white;
     font-size: 16px;
     font-weight: 500;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); /* Усилена тень */
     opacity: 0;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Добавлен эффект "выпрыгивания" */
     z-index: 1000;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px; /* Увеличен gap */
+    max-width: 90%;
 }
-
+.notification.success {
+    background: linear-gradient(to right, #2ecc71, #27ae60); /* Градиент для успеха */
+}
 .notification.error {
-    background: #e74c3c;
+    background: linear-gradient(to right, #e74c3c, #c0392b); /* Градиент для ошибки */
 }
 
 .notification.show {
     opacity: 1;
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateX(-50%) translateY(0); /* Изменено на translateY(0) */
 }
 
 .notification::before {
-    font-family: "Font Awesome 6 Free";
+    font-family: "Font Awesome 6 Free"; /* Убедитесь, что шрифт подключен */
     font-weight: 900;
     display: inline-block;
+    font-size: 1.2em; /* Иконка больше */
 }
 
 .notification.success::before {
-    content: "\f00c";
+    content: "\f00c"; /* check */
 }
 
 .notification.error::before {
-    content: "\f06a";
+    content: "\f06a"; /* exclamation-circle */
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-    .book-container {
-        flex-direction: column;
-        gap: 30px;
-    }
-
-    .book-cover-section {
-        width: 100%;
-    }
-
-    .book-cover-container {
-        height: auto;
-        aspect-ratio: 2/3;
-    }
-
-    .reading-progress {
-        padding: 20px;
-    }
-
-    .progress-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .progress-slider {
-        margin: 15px 0;
-    }
-
-    .book-description {
-        column-count: 1 !important;
-    }
-
-    .notification {
-        width: 90%;
-        text-align: center;
-        padding: 12px 16px;
-    }
-}
 /* Стили для кнопки сохранения с анимацией */
-.page-input-btn {
-    position: relative;
-    transition: all 0.3s ease;
-}
-
 .page-input-btn.pulse {
-    animation: pulse 1s ease;
+    animation: pulse 0.8s ease-out; /* Ускорена анимация */
 }
 
 @keyframes pulse {
     0% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(199, 21, 133, 0.4);
+        box-shadow: 0 3px 8px rgba(199, 21, 133, 0.25);
     }
     50% {
-        transform: scale(1.05);
-        box-shadow: 0 0 0 10px rgba(199, 21, 133, 0);
+        transform: scale(1.08); /* Увеличено масштабирование */
+        box-shadow: 0 6px 15px rgba(199, 21, 133, 0.4);
     }
     100% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(199, 21, 133, 0);
+         box-shadow: 0 3px 8px rgba(199, 21, 133, 0.25);
     }
 }
 
-.page-input-btn:hover::before {
-    content: "Сохранить изменения";
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #C71585;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    white-space: nowrap;
-    z-index: 10;
+/* Подсказка для кнопки сохранения (убрана, т.к. есть иконка) */
+/* .page-input-btn:hover::before { ... } */
+
+
+/* Адаптивность */
+@media (max-width: 992px) { /* Точка изменена на 992px для планшетов */
+    .book-container {
+        flex-direction: column;
+        gap: 40px; /* Увеличен gap */
+    }
+
+    .book-cover-section {
+        width: 100%;
+        max-width: 350px; /* Ограничение ширины на мобильных */
+        margin: 0 auto; /* Центрирование блока обложки */
+        position: static; /* Убрать sticky на мобильных */
+    }
+
+     .book-header h1 {
+        font-size: 2rem; /* Скорректирован размер */
+    }
+     .author {
+        font-size: 1.1rem;
+    }
+
 }
 
-/* Улучшенный слайдер */
-.slider-container {
-    flex: 1;
-    position: relative;
-    padding-top: 25px;
-}
 
-.progress-slider {
-    width: 100%;
-    height: 8px;
-    -webkit-appearance: none;
-    background: #444;
-    border-radius: 4px;
-    outline: none;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
+@media (max-width: 768px) {
+    .container {
+        padding: 30px 15px; /* Уменьшены отступы */
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
 
-.progress-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: #f5f5f5;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    border: 2px solid #C71585;
-}
+    .book-cover-container {
+        /* aspect-ratio остается */
+    }
 
-.progress-slider::-webkit-slider-thumb:hover {
-    background: #C71585;
-    border-color: #f5f5f5;
-    transform: scale(1.1);
-}
+    .book-meta {
+        grid-template-columns: 1fr; /* Уже 1 колонка */
+    }
 
-.slider-tooltip {
-    position: absolute;
-    top: -35px;
-    left: 0;
-    transform: translateX(-50%);
-    background: #C71585;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: bold;
-    opacity: 0;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    pointer-events: none;
-    white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(199, 21, 133, 0.3);
-}
+    .book-header h1 {
+        font-size: 1.8rem;
+    }
+    .author {
+        font-size: 1rem;
+    }
 
-.slider-container:hover .slider-tooltip {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-5px);
+    .book-description {
+        column-count: 1 !important; /* Гарантированно 1 колонка */
+        font-size: 1rem; /* Уменьшен шрифт для мобильных */
+    }
+     .book-description p.first-para::first-letter {
+        font-size: 2.5em; /* Скорректирован размер буквицы */
+    }
+
+
+    .reading-progress {
+        padding: 20px; /* Уменьшены отступы */
+    }
+
+    .progress-controls {
+        flex-direction: row; /* Оставить в ряд, если влезает */
+        flex-wrap: wrap; /* Перенос, если не влезает */
+        justify-content: center; /* Центрировать кнопки */
+        gap: 15px;
+    }
+    .slider-container { padding-top: 20px; }
+     .page-input-group { flex-direction: column; } /* Поле и кнопка друг под другом */
+     .page-input-btn { padding: 12px; } /* Кнопка на всю ширину */
+
+
+    .notification {
+        width: 90%;
+        bottom: 20px; /* Ближе к низу */
+        padding: 14px 20px; /* Уменьшены отступы */
+        font-size: 15px;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .read-now-button {
+        padding: 12px;
+        font-size: 15px;
+    }
+     .status-main-button { padding: 12px 20px; font-size: 15px; }
+     .status-btn { padding: 10px 15px; font-size: 14px; }
 }

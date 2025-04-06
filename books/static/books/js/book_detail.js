@@ -1,366 +1,454 @@
-document.addEventListener("DOMContentLoaded", function() {
-    // Проверяем авторизацию пользователя
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("Book detail script loaded.");
+    // --- Базовые элементы и проверка ---
     const container = document.querySelector(".container");
-    if (!container) return;
-
+    if (!container) {
+        console.error("Container element not found. Script stopped.");
+        return;
+    }
     const isAuthenticated = container.getAttribute("data-is-authenticated") === "true";
     const bookId = container.getAttribute("data-book-id");
-
+    const csrfTokenInput = document.querySelector("[name=csrfmiddlewaretoken]");
+    let hasBookInCollection = false; // Флаг, указывающий, есть ли книга в коллекции пользователя
+    let isProgressChanged = false; // Флаг для отслеживания изменений прогресса
+    console.log(`User Authenticated: ${isAuthenticated}, Book ID: ${bookId}`);
+    if (!csrfTokenInput && isAuthenticated) {
+        console.warn("CSRF token input field not found. Status/Progress updates might fail.");
+    }
+    // --- Скрытие/Показ элементов для авторизованных ---
+    const authRequiredElements = document.querySelectorAll(".book-status-container, .reading-progress");
     if (!isAuthenticated) {
-        // Скрываем элементы управления для неавторизованных пользователей
-        const controls = document.querySelectorAll(".book-status-container, .reading-progress");
-        controls.forEach(el => el.style.display = "none");
-        return;
+        console.log("User is not authenticated. Hiding progress and status controls.");
+        authRequiredElements.forEach(el => { if (el) el.style.display = "none"; });
+    } else {
+        authRequiredElements.forEach(el => {
+            if (el && el.style.display === 'none') el.style.display = '';
+        });
     }
+    // --- Инициализация элементов управления (только если пользователь авторизован) ---
+    let statusMainButton, statusMainText, statusButtons, progressSlider, sliderTooltip,
+        decreaseBtn, increaseBtn, pageInput, updatePagesBtn, currentPageEl, totalPagesEl,
+        progressFill, progressText, bookDescription;
+    let totalPages = 1; // Значение по умолчанию
+    if (isAuthenticated) {
+        // Инициализация элементов
+        statusMainButton = document.getElementById("status-main-button");
+        statusMainText = document.getElementById("status-main-text");
+        statusButtons = document.getElementById("status-buttons");
+        progressSlider = document.getElementById("progress-slider");
+        sliderTooltip = document.getElementById("slider-tooltip");
+        decreaseBtn = document.getElementById("decrease-btn");
+        increaseBtn = document.getElementById("increase-btn");
+        pageInput = document.getElementById("page-input");
+        updatePagesBtn = document.getElementById("update-pages");
+        currentPageEl = document.getElementById("current-page");
+        totalPagesEl = document.getElementById("total-pages");
+        progressFill = document.getElementById("progress-fill");
+        progressText = document.getElementById("progress-text");
+        if (!statusMainButton || !currentPageEl || !totalPagesEl || !progressFill || !progressText) {
+            console.error("Required authenticated user elements not found.");
+        }
+        totalPages = totalPagesEl ? parseInt(totalPagesEl.textContent, 10) || 0 : 0;
+        const progressSection = document.querySelector(".reading-progress");
+        if (totalPages <= 0 && progressSection) {
+            console.log("Total pages is 0 or less. Hiding progress section.");
+            if (progressSection) progressSection.style.display = 'none';
+            totalPages = 1; // Для избежания деления на ноль
+        } else {
+            console.log(`Total pages for progress: ${totalPages}`);
+            if (progressSlider) {
+                initSlider(); // Инициализация слайдера
+                progressSlider.addEventListener("input", handleSliderInput);
+                progressSlider.addEventListener("change", handleSliderChange);
+            } else {
+                console.warn("Progress slider element not found.");
+            }
+            loadBookData(); // Загрузка данных
+        }
+        // Обработчики событий
+        if (statusMainButton && statusButtons) {
+            statusMainButton.addEventListener("click", function (e) {
+                e.stopPropagation();
+                const isOpen = statusButtons.style.display === "flex";
+                statusButtons.style.display = isOpen ? "none" : "flex";
+                statusMainButton.classList.toggle('open', !isOpen);
+                console.log('Status dropdown toggled');
+            });
+            document.addEventListener("click", function (e) {
+                if (statusButtons.style.display === "flex" && !statusMainButton.contains(e.target) && !statusButtons.contains(e.target)) {
+                    statusButtons.style.display = "none";
+                    statusMainButton.classList.remove('open');
+                    console.log('Status dropdown closed by clicking outside');
+                }
+            });
+            document.querySelectorAll(".status-btn").forEach(button => {
+                button.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    const status = this.getAttribute("data-status");
+                    console.log(`Status button clicked: ${status}`);
+                    if (status) {
+                        updateBookStatus(status);
+                        statusButtons.style.display = "none";
+                        statusMainButton.classList.remove('open');
+                        if (status === "read" && totalPages > 0) {
+                            console.log('Status set to "read", updating progress to max.');
+                            if (progressSlider) progressSlider.value = totalPages;
+                            updateProgress(totalPages, true);
+                            createSparkles(progressFill);
+                        }
+                    } else {
+                        console.error("Status button clicked, data-status attribute missing.");
+                    }
+                });
+            });
+        }
+        if (decreaseBtn) {
+            decreaseBtn.addEventListener("click", function () {
+                ensureBookInCollection(); // Убедимся, что книга добавлена в коллекцию
+                if (totalPages <= 0) return;
+                let currentValue = progressSlider ? parseInt(progressSlider.value, 10) : parseInt(currentPageEl.textContent, 10);
+                let newPages = Math.max(0, currentValue - 1);
+                if (progressSlider) progressSlider.value = newPages;
+                updateProgress(newPages, false);
+                animateUpdateButton();
+                console.log(`Decrease button clicked. New value (not saved): ${newPages}`);
+            });
+        }
+        if (increaseBtn) {
+            increaseBtn.addEventListener("click", function () {
+                ensureBookInCollection(); // Убедимся, что книга добавлена в коллекцию
+                if (totalPages <= 0) return;
+                let currentValue = progressSlider ? parseInt(progressSlider.value, 10) : parseInt(currentPageEl.textContent, 10);
+                let newPages = Math.min(totalPages, currentValue + 1);
+                if (progressSlider) progressSlider.value = newPages;
+                updateProgress(newPages, false);
+                animateUpdateButton();
+                console.log(`Increase button clicked. New value (not saved): ${newPages}`);
+            });
+        }
+        if (pageInput) {
+            pageInput.addEventListener("input", animateUpdateButton);
+            pageInput.addEventListener("keypress", function (e) {
+                if (e.key === "Enter") {
+                    console.log("Enter pressed in page input.");
+                    e.preventDefault();
+                    updatePagesFromInput();
+                }
+            });
+        }
+        if (updatePagesBtn) {
+            updatePagesBtn.addEventListener("click", function () {
+                if (!hasBookInCollection) {
+                    ensureBookInCollection(); // Убедимся, что книга добавлена в коллекцию
+                }
+                if (!isProgressChanged) {
+                    showNotification("Нет изменений для сохранения", false);
+                    return;
+                }
 
-    // Инициализация элементов
-    const statusMainButton = document.getElementById("status-main-button");
-    const statusMainText = document.getElementById("status-main-text");
-    const statusButtons = document.getElementById("status-buttons");
-    const progressSlider = document.getElementById("progress-slider");
-    const sliderTooltip = document.getElementById("slider-tooltip");
-    const decreaseBtn = document.getElementById("decrease-btn");
-    const increaseBtn = document.getElementById("increase-btn");
-    const pageInput = document.getElementById("page-input");
-    const updatePagesBtn = document.getElementById("update-pages");
-    const currentPageEl = document.getElementById("current-page");
-    const totalPagesEl = document.getElementById("total-pages");
-    const totalPages = totalPagesEl ? parseInt(totalPagesEl.textContent) || 1 : 1;
-    const progressFill = document.getElementById("progress-fill");
-    const bookDescription = document.getElementById("book-description");
-    const progressText = document.getElementById("progress-text");
+                const pages = parseInt(pageInput.value, 10);
+                if (isNaN(pages)) {
+                    showNotification("Некорректное значение страниц", true);
+                    return;
+                }
 
-    // Проверяем, что все необходимые элементы существуют
-    if (!statusMainButton || !progressSlider || !progressFill) {
-        console.error("Не найдены необходимые элементы управления");
-        return;
-    }
-
-    // Форматирование описания книги
+                updateProgress(pages, true); // Сохраняем изменения на сервер
+                isProgressChanged = false; // Сбрасываем флаг
+            });
+        }
+    } // Конец блока if (isAuthenticated)
+    // Общие функции
+    bookDescription = document.getElementById("book-description");
     if (bookDescription) {
-        formatBookDescription(bookDescription);
+        // formatBookDescription(bookDescription); // Раскомментируйте, если нужна
     }
-
-    // Инициализация слайдера
+    // Функции для авторизованных
     function initSlider() {
+        if (!progressSlider || totalPages <= 0) return;
         progressSlider.min = 0;
         progressSlider.max = totalPages;
         progressSlider.step = 1;
-        progressSlider.style.setProperty('--progress-percent', '0%');
-
-        progressSlider.addEventListener("input", function() {
-            const pages = Math.min(totalPages, Math.max(0, parseInt(this.value)));
-            updateProgress(pages, false); // Не сохраняем на сервер
-            updateSliderTooltip(pages);
-            animateUpdateButton();
-        });
-
-        progressSlider.addEventListener("change", function() {
-            animateUpdateButton();
-        });
+        const initialPage = currentPageEl ? parseInt(currentPageEl.textContent, 10) || 0 : 0;
+        progressSlider.value = Math.min(totalPages, Math.max(0, initialPage));
+        updateSliderTooltip(progressSlider.value);
+        console.log(`Slider initialized: min=0, max=${progressSlider.max}, value=${progressSlider.value}`);
     }
-
-    // Обновление подсказки слайдера
-    function updateSliderTooltip(pages) {
-        if (!sliderTooltip) return;
-        const thumbPosition = (pages / totalPages) * 100;
-        sliderTooltip.textContent = `${pages} стр.`;
-        sliderTooltip.style.left = `calc(${thumbPosition}% + (${8 - thumbPosition * 0.16}px))`;
+    function handleSliderInput() {
+        const pages = parseInt(this.value, 10);
+        updateProgress(pages, false);
+        updateSliderTooltip(pages);
     }
-
-    // Анимация кнопки сохранения
-    function animateUpdateButton() {
-        if (!updatePagesBtn) return;
-
-        // Добавляем класс для анимации
-        updatePagesBtn.classList.add('pulse');
-
-        // Удаляем класс через время, чтобы анимация повторялась
-        setTimeout(() => {
-            updatePagesBtn.classList.remove('pulse');
-        }, 1000);
+    function handleSliderChange() {
+        ensureBookInCollection(); // Убедимся, что книга добавлена в коллекцию
+        const pages = parseInt(this.value, 10);
+        console.log(`Slider change committed. New value: ${pages}`);
+        updateProgress(pages, false); // Не сохраняем на сервер автоматически
+        animateUpdateButton();
     }
-
-    // Загрузка данных с сервера
-    loadBookData();
-
-    // Обработчики событий
-    statusMainButton?.addEventListener("click", function(e) {
-        e.stopPropagation();
-        statusButtons.style.display = statusButtons.style.display === "flex" ? "none" : "flex";
-    });
-
-    document.addEventListener("click", function() {
-        if (statusButtons) statusButtons.style.display = "none";
-    });
-
-    document.querySelectorAll(".status-btn").forEach(button => {
-        button.addEventListener("click", function(e) {
-            e.stopPropagation();
-            const status = this.getAttribute("data-status");
-            updateBookStatus(status);
-            if (statusButtons) statusButtons.style.display = "none";
-
-            if (status === "read") {
-                updateProgress(totalPages, true);
-                if (progressSlider) progressSlider.value = totalPages;
-                createSparkles(progressFill);
-                showNotification("Книга отмечена как прочитанная");
-            }
-        });
-    });
-
-    if (decreaseBtn) {
-        decreaseBtn.addEventListener("click", function() {
-            let newPages = parseInt(currentPageEl.textContent) - 1;
-            newPages = Math.max(0, newPages);
-            if (progressSlider) progressSlider.value = newPages;
-            updateProgress(newPages, false);
-            animateUpdateButton();
-        });
-    }
-
-    if (increaseBtn) {
-        increaseBtn.addEventListener("click", function() {
-            let newPages = parseInt(currentPageEl.textContent) + 1;
-            newPages = Math.min(totalPages, newPages);
-            if (progressSlider) progressSlider.value = newPages;
-            updateProgress(newPages, false);
-            animateUpdateButton();
-        });
-    }
-
-    if (pageInput) {
-        pageInput.addEventListener("input", function() {
-            animateUpdateButton();
-        });
-
-        pageInput.addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                updatePages();
-            }
-        });
-    }
-
-    if (updatePagesBtn) {
-        updatePagesBtn.addEventListener("click", updatePages);
-    }
-
-    function updatePages() {
-        let pages = parseInt(pageInput.value) || 0;
+    function updatePagesFromInput() {
+        ensureBookInCollection(); // Убедимся, что книга добавлена в коллекцию
+        if (!pageInput || totalPages <= 0) return;
+        let pages = parseInt(pageInput.value, 10);
+        if (isNaN(pages)) pages = currentPageEl ? parseInt(currentPageEl.textContent, 10) || 0 : 0;
         pages = Math.max(0, Math.min(totalPages, pages));
-        updateProgress(pages, true);
-        showNotification("Прогресс обновлен");
+        console.log(`Updating pages from input to: ${pages}`);
+        if (progressSlider) progressSlider.value = pages;
+        updateProgress(pages, false); // Не сохраняем на сервер автоматически
+        if (updatePagesBtn) {
+            updatePagesBtn.classList.add('pulse');
+            setTimeout(() => { updatePagesBtn.classList.remove('pulse'); }, 800);
+        }
     }
-
-    // Функция загрузки данных книги
+    function getCSRFToken() {
+        return csrfTokenInput ? csrfTokenInput.value : null;
+    }
     function loadBookData() {
-        fetch(`/get_book_status/?book_id=${bookId}`, {
-            headers: {
-                'X-CSRFToken': getCSRFToken()
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error("Network response was not ok");
-            return response.json();
-        })
-        .then(data => {
-            if (data.exists) {
-                updateStatusButton(data.status);
-                updateProgress(data.progress, false);
-
-                if (data.status === "read" && progressFill) {
+        if (!bookId) return;
+        console.log(`Loading book data for book ID: ${bookId}`);
+        fetch(`/get_book_status/?book_id=${bookId}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => {
+                if (!response.ok) throw new Error(`Network response error: ${response.statusText} (${response.status})`);
+                return response.json();
+            })
+            .then(data => {
+                console.log("Book data received:", data);
+                hasBookInCollection = data.exists; // Обновляем флаг наличия книги в коллекции
+                let initialProgress = 0;
+                if (data.exists && data.progress !== undefined && data.progress !== null) {
+                    updateStatusButton(data.status);
+                    initialProgress = Math.max(0, Math.min(totalPages, data.progress));
+                    if (data.status === "read") initialProgress = totalPages;
+                } else {
+                    updateStatusButton("");
+                }
+                updateProgress(initialProgress, false);
+                if (progressSlider) {
+                    progressSlider.value = initialProgress;
+                    updateSliderTooltip(initialProgress);
+                }
+                if (initialProgress === totalPages && totalPages > 0) {
                     createSparkles(progressFill);
                 }
-            } else {
+            })
+            .catch(error => {
+                console.error("Ошибка загрузки данных статуса книги:", error);
                 updateStatusButton("");
                 updateProgress(0, false);
-            }
-            initSlider();
-        })
-        .catch(error => {
-            console.error("Ошибка загрузки данных:", error);
-            showNotification("Ошибка загрузки данных книги", true);
-        });
+                if (progressSlider) {
+                    progressSlider.value = 0;
+                    updateSliderTooltip(0);
+                }
+            });
+    }
+function updateProgress(pagesRead, saveToServer) {
+    if (!progressFill || !progressText || !currentPageEl || totalPages <= 0) {
+        if (totalPages <= 0) console.warn("Cannot update progress: total pages is 0.");
+        else console.warn("Progress elements missing, cannot update progress display.");
+        return;
+    }
+    pagesRead = Math.max(0, Math.min(totalPages, pagesRead));
+    const percentage = (pagesRead / totalPages) * 100;
+    const roundedPercentage = Math.round(percentage * 10) / 10;
+
+    // Обновляем визуальные элементы
+    progressFill.style.width = percentage + "%";
+    progressText.textContent = roundedPercentage + "%";
+    currentPageEl.textContent = pagesRead;
+    if (pageInput && document.activeElement !== pageInput) {
+        pageInput.value = pagesRead;
+    }
+    updateSliderTooltip(pagesRead);
+
+    console.log(`Progress updated: ${pagesRead}/${totalPages} pages (${roundedPercentage}%) - SaveToServer: ${saveToServer}`);
+
+    // Логика сохранения на сервер
+    if (saveToServer && isAuthenticated && bookId && hasBookInCollection) {
+        saveProgressToServer(pagesRead);
+        if (pagesRead === totalPages) {
+            updateBookStatus("read"); // Если прогресс достиг 100%, устанавливаем статус "Прочитано"
+        } else if (pagesRead > 0 && pagesRead < totalPages) {
+            updateBookStatus("reading"); // Если прогресс больше 0, но меньше 100%, устанавливаем статус "Читаю"
+        }
+        showNotification("Данные успешно обновлены");
+    } else {
+        isProgressChanged = true; // Отмечаем, что прогресс был изменен
+        // Сообщение удалено отсюда
     }
 
-    // Функция обновления прогресса
-    function updateProgress(pagesRead, saveToServer) {
-        pagesRead = Math.max(0, Math.min(totalPages, pagesRead));
-        const percentage = (pagesRead / totalPages) * 100;
-        const roundedPercentage = Math.round(percentage * 10) / 10;
-
-        progressFill.style.width = percentage + "%";
-        progressText.textContent = roundedPercentage + "%";
-        currentPageEl.textContent = pagesRead;
-        if (pageInput) pageInput.value = pagesRead;
-        if (progressSlider) {
-            progressSlider.value = pagesRead;
-            progressSlider.style.setProperty('--progress-percent', `${percentage}%`);
-        }
-        updateSliderTooltip(pagesRead);
-
-        if (saveToServer) {
-            saveProgressToServer(pagesRead);
-        }
-
-        if (saveToServer && pagesRead > 0) {
-            createSparkles(progressFill);
-        }
+    if (saveToServer && pagesRead > 0) createSparkles(progressFill);
+}
+    function updateSliderTooltip(pages) {
+        if (!sliderTooltip || !progressSlider || totalPages <= 0) return;
+        const thumbPositionPercent = (pages / totalPages) * 100;
+        const sliderWidth = progressSlider.offsetWidth || 200;
+        const thumbWidth = 20;
+        const offset = (thumbWidth / 2) - (thumbPositionPercent / 100 * thumbWidth);
+        sliderTooltip.textContent = `${pages} стр.`;
+        sliderTooltip.style.left = `calc(${thumbPositionPercent}% + ${offset}px)`;
     }
-
-    // Функция сохранения прогресса на сервере
     function saveProgressToServer(pagesRead) {
-        const percentage = (pagesRead / totalPages) * 100;
+        const token = getCSRFToken();
+        if (!token) { console.error("CSRF Token missing."); return; }
+        if (!bookId) { console.error("Book ID missing."); return; }
+        const percentage = totalPages > 0 ? (pagesRead / totalPages) * 100 : 0;
+        console.log(`Saving progress: bookId=${bookId}, pages=${pagesRead}, percent=${percentage}`);
         fetch("/update-progress/", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCSRFToken(),
-            },
-            body: JSON.stringify({
-                book_id: bookId,
-                progress: pagesRead,
-                progress_percent: percentage,
-            }),
+            headers: { "Content-Type": "application/json", "X-CSRFToken": token, 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ book_id: bookId, progress: pagesRead, progress_percent: percentage }),
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status !== "success") {
-                console.error("Ошибка сохранения:", data.message);
-                showNotification("Ошибка сохранения прогресса", true);
-            }
-        })
-        .catch(error => {
-            console.error("Ошибка запроса:", error);
-            showNotification("Ошибка соединения с сервером", true);
-        });
-    }
-
-    // Функция обновления статуса книги
-    function updateBookStatus(status) {
-        const currentPages = parseInt(currentPageEl.textContent);
-        const progress = Math.round((currentPages / totalPages) * 100);
-
-        fetch("/update_book_status/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCSRFToken(),
-            },
-            body: JSON.stringify({
-                book_id: bookId,
-                status: status,
-                progress: status === 'read' ? totalPages : currentPages,
-                progress_percent: status === 'read' ? 100 : progress
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateStatusButton(status);
-                showNotification(`Книга добавлена в "${getStatusName(status)}"`);
-
-                if (status === 'read') {
-                    updateProgress(totalPages, false);
-                    createSparkles(progressFill);
+            .then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
+            .then(data => {
+                if (data.status !== "success") {
+                    console.error("Error saving progress:", data.message);
+                    showNotification(`Ошибка сохранения: ${data.message || 'Неизвестная ошибка'}`, true);
+                } else {
+                    console.log("Progress saved successfully.");
                 }
-            } else {
-                showNotification("Ошибка: " + data.message, true);
-            }
+            })
+            .catch(error => {
+                console.error("Network error saving progress:", error);
+                const message = error.message || (typeof error === 'string' ? error : 'Ошибка соединения');
+                showNotification(`Ошибка сохранения: ${message}`, true);
+            });
+    }
+    function updateBookStatus(status) {
+    const token = getCSRFToken();
+    if (!token) {
+        console.error("CSRF Token missing.");
+        showNotification("Ошибка аутентификации", true);
+        return;
+    }
+    if (!bookId) {
+        console.error("Book ID missing.");
+        return;
+    }
+
+    // Получаем текущий статус из кнопки
+    const currentStatus = statusMainButton.classList.contains("reading") ? "reading" :
+                         statusMainButton.classList.contains("want-to-read") ? "want-to-read" :
+                         statusMainButton.classList.contains("read") ? "read" : "";
+
+    // Если статус не изменился, не отправляем запрос
+    if (currentStatus === status) {
+        console.log(`Status already set to ${status}. No update needed.`);
+        return;
+    }
+
+    const currentPages = currentPageEl ? parseInt(currentPageEl.textContent, 10) || 0 : 0;
+    const progressToSend = status === 'read' ? totalPages : currentPages;
+    const percentToSend = status === 'read' ? 100 : (totalPages > 0 ? (progressToSend / totalPages) * 100 : 0);
+
+    console.log(`Updating status: status=${status}, bookId=${bookId}, progress=${progressToSend}, percent=${percentToSend}`);
+
+    fetch("/update_book_status/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": token,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            book_id: bookId,
+            status: status,
+            progress: progressToSend,
+            progress_percent: percentToSend
         })
-        .catch(error => {
-            console.error("Ошибка:", error);
-            showNotification("Произошла ошибка", true);
-        });
-    }
+    })
+    .then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
+    .then(data => {
+        if (data.success || data.status === 'success') {
+            console.log(`Status updated to: ${status}`);
+            hasBookInCollection = true;
+            updateStatusButton(status);
 
-    // Вспомогательные функции
-    function getCSRFToken() {
-        return document.querySelector("[name=csrfmiddlewaretoken]").value;
-    }
+            // Показываем уведомление только если статус действительно изменился
+            showNotification(`Статус книги обновлен на "${getStatusName(status)}"`);
 
+            if (status === 'read' && totalPages > 0) {
+                updateProgress(totalPages, false);
+                createSparkles(progressFill);
+            }
+        } else {
+            const message = data.message || data.error || 'Неизвестная ошибка';
+            console.error("Error updating status:", message);
+            showNotification(`Ошибка обновления статуса: ${message}`, true);
+        }
+    })
+    .catch(error => {
+        console.error("Network error updating status:", error);
+        const message = error.message || (typeof error === 'string' ? error : 'Ошибка соединения');
+        showNotification(`Ошибка обновления статуса: ${message}`, true);
+    });
+}
     function updateStatusButton(status) {
+        if (!statusMainButton || !statusMainText) return;
         statusMainButton.classList.remove("reading", "want-to-read", "read");
-
-        switch(status) {
-            case "reading":
-                statusMainButton.classList.add("reading");
-                statusMainText.textContent = "Читаю";
-                break;
-            case "want-to-read":
-                statusMainButton.classList.add("want-to-read");
-                statusMainText.textContent = "В планах";
-                break;
-            case "read":
-                statusMainButton.classList.add("read");
-                statusMainText.textContent = "Прочитано";
-                break;
-            default:
-                statusMainText.textContent = "Добавить в мои книги";
+        let text = "Добавить в мои книги";
+        switch (status) {
+            case "reading": statusMainButton.classList.add("reading"); text = "Читаю"; break;
+            case "want-to-read": statusMainButton.classList.add("want-to-read"); text = "В планах"; break;
+            case "read": statusMainButton.classList.add("read"); text = "Прочитано"; break;
+        }
+        statusMainText.textContent = text;
+    }
+    function ensureBookInCollection() {
+        if (!hasBookInCollection) {
+            console.log("Book not in collection. Adding to 'reading' status automatically.");
+            updateBookStatus("reading"); // Автоматически добавляем книгу в категорию "Читаю"
+            hasBookInCollection = true; // Обновляем флаг
+            showNotification("Книга добавлена в категорию 'Читаю'", false);
         }
     }
-
     function formatBookDescription(element) {
-        let text = element.textContent.trim();
-        text = text.replace(/\s+/g, ' ');
-        text = text.replace(/([^A-ZА-Я]\.)\s+/g, '$1\n\n');
-        text = text.replace(/\n+/g, '\n').trim();
-
-        const paragraphs = text.split('\n').filter(p => p.length > 0);
-        let formattedText = '';
-
-        paragraphs.forEach((para, index) => {
-            if (index === 0) {
-                formattedText += `<p class="first-para">${para}</p>`;
-            } else {
-                formattedText += `<p>${para}</p>`;
-            }
-        });
-
-        element.innerHTML = formattedText;
+        // Оставьте пустым или добавьте свою логику
     }
-
     function createSparkles(container) {
+        if (!container) return;
         const sparklesContainer = container.querySelector(".progress-bar-sparkles");
         if (!sparklesContainer) return;
-
         sparklesContainer.innerHTML = "";
-        const width = parseFloat(container.style.width) || 0;
-
-        if (width > 0) {
-            for (let i = 0; i < 5; i++) {
+        const widthPercent = parseFloat(container.style.width) || 0;
+        if (widthPercent > 5) {
+            const numSparkles = Math.min(8, Math.floor(widthPercent / 10));
+            for (let i = 0; i < numSparkles; i++) {
                 const sparkle = document.createElement("div");
                 sparkle.className = "sparkle";
-                sparkle.style.left = `${Math.random() * width}%`;
-                sparkle.style.top = `${Math.random() * 100}%`;
-                sparkle.style.width = `${Math.random() * 4 + 2}px`;
-                sparkle.style.height = sparkle.style.width;
-                sparkle.style.animationDelay = `${Math.random() * 2}s`;
+                sparkle.style.left = `${Math.random() * 100}%`;
+                sparkle.style.top = `${Math.random() * 60 + 20}%`;
+                const size = `${Math.random() * 3 + 2}px`;
+                sparkle.style.width = size; sparkle.style.height = size;
+                sparkle.style.animationDelay = `${Math.random() * 1.5}s`;
+                sparkle.style.animationDuration = `${Math.random() * 1 + 1}s`;
                 sparklesContainer.appendChild(sparkle);
             }
         }
     }
-
     function getStatusName(status) {
-        const names = {
-            "reading": "Читаю",
-            "want-to-read": "В планах",
-            "read": "Прочитано"
-        };
+        const names = { "reading": "Читаю", "want-to-read": "В планах", "read": "Прочитано" };
         return names[status] || status;
     }
-
+    let notificationTimeout;
     function showNotification(message, isError = false) {
+        const existingNotification = document.querySelector(".notification.show");
+        if (existingNotification) {
+            existingNotification.classList.remove("show");
+            setTimeout(() => existingNotification.remove(), 400);
+        }
         const notification = document.createElement("div");
         notification.className = `notification ${isError ? "error" : "success"}`;
         notification.textContent = message;
         document.body.appendChild(notification);
-
         setTimeout(() => notification.classList.add("show"), 10);
         setTimeout(() => {
             notification.classList.remove("show");
-            setTimeout(() => notification.remove(), 300);
+            setTimeout(() => notification.remove(), 400);
         }, 3000);
     }
-});
+    function animateUpdateButton() {
+        if (updatePagesBtn) {
+            updatePagesBtn.classList.add('pulse');
+            setTimeout(() => { updatePagesBtn.classList.remove('pulse'); }, 800);
+        }
+    }
+}); // Конец DOMContentLoaded

@@ -2,116 +2,128 @@
 {% load static %}
 
 {% block title %}
-{{ book.title }}
+{{ book.title }} - {{ book.authors|default:"Автор неизвестен" }}
 {% endblock %}
 
 {% block extra_head %}
+    {# Подключение стилей для этой страницы #}
     <link rel="stylesheet" href="{% static 'books/css/book_detail.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {# Подключение Font Awesome #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    {# Стиль для динамического фона #}
+    <style>
+        #page-background {
+            /* Используем ВАШ вариант для src, если он работает */
+            background-image: url('{% if book.thumbnail %}{{ book.thumbnail }}{% else %}{% static 'books/images/default_book_cover.jpg' %}{% endif %}');
+            /* Если этот вариант НЕ работает для фона, попробуйте: */
+            /* background-image: url('{% if book.thumbnail %}{{ book.thumbnail.url }}{% else %}{% static 'books/images/default_book_cover.jpg' %}{% endif %}'); */
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
+{# Элемент для размытого фона страницы #}
+<div id="page-background"></div>
+
+{# Основной контейнер с контентом #}
 <div class="container" data-book-id="{{ book.id }}" data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}">
+
+    {# Контейнер для расположения обложки и деталей #}
     <div class="book-container">
-        <div class="book-cover-section">
+
+        {# Секция с обложкой, мета-данными и статусом #}
+        <aside class="book-cover-section">
             <div class="book-cover-container">
-                <img id="book-cover" src="{% if book.thumbnail %}{{ book.thumbnail }}{% else %}{% static 'books/images/default_book_cover.jpg' %}{% endif %}" alt="Обложка книги">
+                <img id="book-cover"
+                     src="{% if book.thumbnail %}{{ book.thumbnail }}{% else %}{% static 'books/images/default_book_cover.jpg' %}{% endif %}" {# <-- ВАШ ВАРИАНТ SRC #}
+                     alt="Обложка книги {{ book.title }}">
             </div>
 
+            {# Мета-данные под обложкой (как в рабочем варианте) #}
+            <div class="book-meta">
+                <div class="meta-item rating"> <i class="fas fa-star"></i> <span>{{ book.rating|floatformat:1|default:"-" }}/5</span> </div>
+                <div class="meta-item language"> <i class="fas fa-language"></i> <span>{{ book.language|default:"Неизвестно" }}</span> </div>
+                <div class="meta-item genre"> <i class="fas fa-tag"></i> <span>{{ book.genre|default:"Не указан" }}</span> </div>
+                <div class="meta-item page-count"> <i class="fas fa-file-lines"></i> <span>{{ book.page_count|default:"?" }} стр.</span> </div>
+                <div class="meta-item isbn"> <i class="fas fa-barcode"></i> <span>ISBN: {{ book.isbn|default:"-" }}</span> </div>
+            </div>
+
+            {# Блок статуса книги (как в рабочем варианте) #}
             {% if user.is_authenticated %}
             <div class="book-status-container">
-                <button class="status-main-button" id="status-main-button">
-                    <i class="fas fa-bookmark"></i>
-                    <span id="status-main-text">Добавить в мои книги</span>
-                </button>
-                <div class="status-buttons" id="status-buttons">
-                    <button class="status-btn reading-button" data-status="reading">
-                        <i class="fas fa-book-open"></i> Читаю
-                    </button>
-                    <button class="status-btn want-to-read-button" data-status="want-to-read">
-                        <i class="fas fa-clock"></i> В планах
-                    </button>
-                    <button class="status-btn read-button" data-status="read">
-                        <i class="fas fa-check-circle"></i> Прочитано
-                    </button>
-                </div>
+                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                 <button type="button" class="status-main-button" id="status-main-button">
+                     <span id="status-main-text">Добавить в мои книги</span> <i class="fas fa-chevron-down"></i>
+                 </button>
+                 <div class="status-buttons" id="status-buttons">
+                     <button type="button" class="status-btn reading-button" data-status="reading"> <i class="fas fa-book-reader"></i> Читаю </button>
+                     <button type="button" class="status-btn want-to-read-button" data-status="want-to-read"> <i class="fas fa-bookmark"></i> В планах </button>
+                     <button type="button" class="status-btn read-button" data-status="read"> <i class="fas fa-check-circle"></i> Прочитано </button>
+                 </div>
             </div>
             {% endif %}
-        </div>
 
-        <div class="book-details">
-            <h1 id="book-title">{{ book.title }}</h1>
-            <p id="book-author">Автор: {{ book.authors|default:"Неизвестно" }}</p>
+            {# Кнопка "Читать сейчас" (как в рабочем варианте) #}
+            <button type="button" class="read-now-button" id="read-now-action-button" {% if not book.is_readable_online %}disabled title="Чтение онлайн недоступно"{% endif %}>
+                <i class="fas fa-book-open"></i> Читать онлайн
+            </button>
+        </aside>
 
-            <div class="book-description-container">
-                <h3 class="description-title">О книге</h3>
-                <div class="book-description" id="book-description">
-                    {{ book.description|striptags|default:"Описание отсутствует." }}
+        {# Секция с детальной информацией о книге (как в рабочем варианте) #}
+        <main class="book-details">
+            <header class="book-header">
+                <h1 id="book-title">{{ book.title }}</h1>
+                <a href="#" id="book-author-link" class="author">Автор: {{ book.authors|default:"Неизвестно" }}</a>
+                <div class="publication-info">
+                    <span class="publisher"><i class="fas fa-building"></i> {{ book.publisher|default:"Неизвестно" }}</span> <span class="separator">•</span>
+                    <span class="year"><i class="fas fa-calendar-alt"></i> {{ book.published_date|date:"Y"|default:"?" }}</span> <span class="separator">•</span>
+                    <span class="pages"><i class="fas fa-file-alt"></i> {{ book.page_count|default:"?" }} стр.</span>
                 </div>
-            </div>
+            </header>
 
-            <p id="book-publisher">Издательство: {{ book.publisher|default:"Неизвестно" }}</p>
-            <p id="book-year">Год: {{ book.published_date|default:"Неизвестно" }}</p>
-            <p id="book-pages">Страниц: <span id="total-pages">{{ book.page_count|default:"0" }}</span></p>
+            <section class="book-description-container">
+                <h2 class="section-title">Описание</h2>
+                <div class="book-description" id="book-description"> {{ book.description|striptags|linebreaksbr|default:"Описание отсутствует." }} </div>
+            </section>
 
-            {% if user.is_authenticated %}
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-            <div class="reading-progress">
-                <h3 class="progress-title">
-                    <i class="fas fa-bookmark progress-icon"></i>
-                    Прогресс чтения
-                </h3>
-
+            {# Секция прогресса чтения (как в рабочем варианте, с правильным ID total-pages) #}
+            {% if user.is_authenticated and book.page_count > 0 %}
+            <section class="reading-progress">
+                <h2 class="section-title"> <i class="fas fa-tasks progress-icon"></i> Мой прогресс чтения </h2>
                 <div class="progress-visualization">
                     <div class="progress-bar-container">
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" id="progress-fill" style="width: 0%">
-                                <div class="progress-bar-wave"></div>
-                                <div class="progress-bar-sparkles">
-                                    <div class="sparkle"></div>
-                                    <div class="sparkle"></div>
-                                    <div class="sparkle"></div>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="progress-bar-bg"> <div class="progress-bar-fill" id="progress-fill" style="width: 0%;"> <div class="progress-bar-wave"></div> <div class="progress-bar-sparkles"></div> </div> </div>
                         <div class="progress-percentage" id="progress-text">0%</div>
                     </div>
-
                     <div class="pages-display">
-                        <span id="current-page">0</span>
-                        <span class="pages-separator">/</span>
-                        <span id="total-pages-display">{{ book.page_count|default:"0" }}</span>
+                        <span id="current-page">0</span> <span class="pages-separator">/</span>
+                        <span id="total-pages">{{ book.page_count|default:"0" }}</span> {# <-- ПРАВИЛЬНЫЙ ID #}
                         <span class="pages-label">страниц</span>
                     </div>
                 </div>
-
                 <div class="progress-controls">
-                    <button class="progress-btn" id="decrease-btn">
-                        <i class="fas fa-minus"></i>
-                    </button>
-
+                    <button type="button" class="progress-btn" id="decrease-btn" aria-label="Уменьшить страницу"> <i class="fas fa-minus"></i> </button>
                     <div class="slider-container">
-                        <input type="range" id="progress-slider" min="0" max="{{ book.page_count|default:'0' }}" value="0" class="progress-slider precise-slider">
-                        <div class="slider-tooltip" id="slider-tooltip">0</div>
+                        <input type="range" id="progress-slider" min="0" max="{{ book.page_count|default:'1' }}" value="0" class="progress-slider">
+                        <div class="slider-tooltip" id="slider-tooltip">0 стр.</div>
                     </div>
-
-                    <button class="progress-btn" id="increase-btn">
-                        <i class="fas fa-plus"></i>
-                    </button>
+                    <button type="button" class="progress-btn" id="increase-btn" aria-label="Увеличить страницу"> <i class="fas fa-plus"></i> </button>
                 </div>
-
                 <div class="page-input-group">
-                    <input type="number" id="page-input" min="0" max="{{ book.page_count|default:'0' }}"
-                           placeholder="Номер страницы" class="page-input">
-                    <button id="update-pages" class="page-input-btn">
-                        <i class="fas fa-check"></i>
-                    </button>
+                    <input type="number" id="page-input" min="0" max="{{ book.page_count|default:'0' }}" placeholder="Номер страницы" class="page-input">
+                    <button type="button" id="update-pages" class="page-input-btn" aria-label="Сохранить страницу"> <i class="fas fa-save"></i> </button>
                 </div>
-            </div>
+            </section>
+            {% elif user.is_authenticated %}
+             <section class="reading-progress"> <p>Информация о количестве страниц отсутствует, отслеживание прогресса недоступно.</p> </section>
             {% endif %}
-        </div>
+        </main>
+
     </div>
 </div>
 
+{# Подключение JS в конце #}
 <script src="{% static 'books/js/book_detail.js' %}"></script>
+
 {% endblock %}

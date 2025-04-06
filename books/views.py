@@ -14,7 +14,7 @@ from .models import UserBook
 
 logger = logging.getLogger(__name__)
 
-API_KEY = 'AIzaSyBzihVeBYzNjUjj-o-7DJCucdcbgj1wuU4'
+API_KEY = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
 DEFAULT_BOOK_COVER = '/static/books/images/default_book_cover.jpg'
 API_TIMEOUT = 10
 
@@ -116,6 +116,10 @@ def book_detail(request, book_id):
             response.raise_for_status()
             book = response.json()
 
+            # Получаем ISBN (если есть)
+            industry_identifiers = book['volumeInfo'].get('industryIdentifiers', [])
+            isbn = next((id['identifier'] for id in industry_identifiers if id['type'] in ['ISBN_10', 'ISBN_13']), '-')
+
             book_data = {
                 'id': book['id'],
                 'title': book['volumeInfo'].get('title', 'Без названия'),
@@ -125,6 +129,11 @@ def book_detail(request, book_id):
                 'published_date': book['volumeInfo'].get('publishedDate', 'Не указан'),
                 'thumbnail': book['volumeInfo'].get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
                 'description': book['volumeInfo'].get('description', 'Описание отсутствует'),
+                'language': book['volumeInfo'].get('language', 'Неизвестно'),
+                'rating': book['volumeInfo'].get('averageRating'),
+                'genre': ', '.join(book['volumeInfo'].get('categories', ['Не указан'])),
+                'isbn': isbn,
+                'is_readable_online': book.get('accessInfo', {}).get('webReaderLink') is not None,
             }
 
             cache.set(cache_key, book_data, 86400)
