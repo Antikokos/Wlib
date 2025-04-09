@@ -13,10 +13,11 @@ from django.db.models import Avg
 import requests
 from .forms import RegisterForm
 from .models import UserBook, BookReview
+import re
 
 logger = logging.getLogger(__name__)
 
-API_KEY = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
+API_KEY = 'AIzaSyBzihVeBYzNjUjj-o-7DJCucdcbgj1wuU4'
 DEFAULT_BOOK_COVER = '/static/books/images/default_book_cover.jpg'
 API_TIMEOUT = 10
 
@@ -93,13 +94,30 @@ def search(request):
         messages.error(request, 'Произошла ошибка при поиске книг')
         return redirect('home')
 
+
+import json
+import logging
+from django.shortcuts import render, redirect
+from django.http import JsonResponse, Http404
+from django.db.models import Avg
+import requests
+from .models import UserBook, BookReview
+
+logger = logging.getLogger(__name__)
+API_KEY = 'AIzaSyDz_Ps6nlxBK9ISxjSHIqMhHvjaFuq__eA'
+DEFAULT_BOOK_COVER = '/static/books/images/default_book_cover.jpg'
+API_TIMEOUT = 10
+
+
 def book_detail(request, book_id):
+    # Проверяем кэш
     cache_key = f'book_{book_id}'
     cached_data = cache.get(cache_key)
     if cached_data:
         book_data = cached_data
     else:
         try:
+            # Запрос данных о книге через Google Books API
             url = f'https://www.googleapis.com/books/v1/volumes/{book_id}?key={API_KEY}'
             response = requests.get(url, timeout=API_TIMEOUT)
             if response.status_code == 404:
@@ -107,12 +125,24 @@ def book_detail(request, book_id):
             response.raise_for_status()
             book = response.json()
             volume_info = book.get('volumeInfo', {})
+
+            # Извлекаем ISBN
             industry_identifiers = volume_info.get('industryIdentifiers', [])
             isbn = next(
                 (id['identifier'] for id in industry_identifiers
                  if id['type'] in ['ISBN_10', 'ISBN_13']),
                 '-'
             )
+
+            # Обработка жанров
+            categories = volume_info.get('categories', [])
+            genre_text = 'Не указан'
+            if categories:
+                genres = [genre.strip() for category in categories for genre in category.split('/')]
+                genres = list(set(genres))[:3]
+                genre_text = ', '.join(genres) if genres else 'Не указан'
+
+            # Формируем данные о книге
             book_data = {
                 'id': book['id'],
                 'title': volume_info.get('title', 'Без названия'),
@@ -125,7 +155,7 @@ def book_detail(request, book_id):
                 'language': volume_info.get('language', 'Неизвестно'),
                 'rating': volume_info.get('averageRating'),
                 'rating_count': volume_info.get('ratingsCount', 0),
-                'genre': ', '.join(volume_info.get('categories', ['Не указан'])),
+                'genre': genre_text,
                 'isbn': isbn,
                 'is_readable_online': book.get('accessInfo', {}).get('webReaderLink') is not None,
             }
@@ -134,6 +164,7 @@ def book_detail(request, book_id):
             logger.error(f"Ошибка при получении деталей книги {book_id}: {e}")
             raise Http404("Не удалось загрузить информацию о книге")
 
+    # Данные о книге в профиле пользователя
     user_book_data = {
         'has_book': False,
         'status': '',
@@ -143,30 +174,33 @@ def book_detail(request, book_id):
 
     if request.user.is_authenticated:
         try:
-            user_book = UserBook.objects.get(user=request.user, book_id=book_id)
-            user_book_data = {
-                'has_book': True,
-                'status': user_book.status,
-                'progress': user_book.progress,
-                'progress_percent': user_book.progress_percent
-            }
-        except UserBook.DoesNotExist:
-            pass
+            # Используем filter() вместо get() для обработки дубликатов
+            user_books = UserBook.objects.filter(user=request.user, book_id=book_id).order_by('-updated_at')
 
+            if user_books.exists():
+                # Берем последнюю запись (самую свежую)
+                user_book = user_books.first()
+                user_book_data = {
+                    'has_book': True,
+                    'status': user_book.status,
+                    'progress': user_book.progress,
+                    'progress_percent': user_book.progress_percent
+                }
+
+                # Удаляем дубликаты (если они есть)
+                if user_books.count() > 1:
+                    user_books.exclude(pk=user_book.pk).delete()
+                    logger.warning(f"Удалены дубликаты книги {book_id} для пользователя {request.user.username}")
+
+        except Exception as e:
+            logger.error(f"Ошибка при получении данных пользователя о книге {book_id}: {e}")
+
+    # Отзывы
     reviews = BookReview.objects.filter(book_id=book_id).select_related('user').order_by('-created_at')
     total_reviews = reviews.count()
     average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
 
-    # Создаем статистику рейтингов
-    rating_stats = {
-        '5': reviews.filter(rating=5).count(),
-        '4': reviews.filter(rating=4).count(),
-        '3': reviews.filter(rating=3).count(),
-        '2': reviews.filter(rating=2).count(),
-        '1': reviews.filter(rating=1).count(),
-    }
-
-    # Создаем rating_bars с предварительно вычисленными процентами
+    # Статистика рейтингов
     rating_bars = []
     for stars in ['5', '4', '3', '2', '1']:
         count = reviews.filter(rating=int(stars)).count()
@@ -177,7 +211,7 @@ def book_detail(request, book_id):
             'percent': round(percent, 1)
         })
 
-    # Получаем отзыв текущего пользователя (если он авторизован)
+    # Отзыв текущего пользователя
     user_review = None
     if request.user.is_authenticated:
         user_review = BookReview.objects.filter(
@@ -185,11 +219,12 @@ def book_detail(request, book_id):
             book_id=book_id
         ).first()
 
+    # Контекст для шаблона
     context = {
         'book': book_data,
         'user_book': user_book_data,
         'is_authenticated': request.user.is_authenticated,
-        'reviews': reviews[:10],  # Показываем последние 10 отзывов
+        'reviews': reviews[:10],
         'rating_bars': rating_bars,
         'total_reviews': total_reviews,
         'average_rating': round(average_rating, 1) if average_rating else 0,
@@ -199,6 +234,7 @@ def book_detail(request, book_id):
     }
 
     return render(request, 'books/book_detail.html', context)
+
 # ... (остальные функции остаются без изменений, начиная с @login_required def add_review и до конца файла)
 @login_required
 @csrf_protect
@@ -454,3 +490,16 @@ def profile(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+@login_required
+@csrf_protect
+def delete_review(request, review_id):
+    try:
+        review = BookReview.objects.get(id=review_id, user=request.user)
+        review.delete()
+        return JsonResponse({'success': True, 'message': 'Отзыв успешно удален'})
+    except BookReview.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Отзыв не найден'}, status=404)
+    except Exception as e:
+        logger.error(f"Ошибка при удалении отзыва: {e}")
+        return JsonResponse({'success': False, 'message': 'Ошибка при удалении отзыва'}, status=500)

@@ -30,19 +30,24 @@ body {
     overflow-x: hidden;
 }
 
-/* Размытый фон страницы с эффектом параллакса */
 #page-background {
     position: fixed;
     top: -10%;
     left: -10%;
     width: 120%;
     height: 120%;
-    z-index: -1;
+    z-index: -2; /* Ниже оверлея */
     background-size: cover;
     background-position: center;
     filter: blur(30px) brightness(0.6);
     transform: scale(1.1);
-    transition: background-image 0.5s ease-in-out;
+    transition: background-color 0.5s ease;
+    background-color: rgba(0, 0, 0, 0.5); /* Увеличили прозрачность */
+    /* Убрали background-blend-mode */
+}
+
+#page-overlay {
+    display: none !important; /* Для теста */
 }
 
 /* Основной контейнер с эффектом поднятия при наведении */
@@ -182,7 +187,7 @@ body {
     gap: 8px;
     margin-top: 10px;
     position: absolute;
-    width: 100%;
+    width: 91%;
     background: rgba(40, 44, 49, 0.95);
     border-radius: 10px;
     padding: 12px;
@@ -631,6 +636,14 @@ body {
     color: var(--text-color);
     font-size: 16px;
     transition: all 0.2s ease;
+    -moz-appearance: textfield; /* Для Firefox */
+}
+
+/* Убирает стрелки в WebKit-браузерах */
+.page-input[type="number"]::-webkit-inner-spin-button,
+.page-input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .page-input::placeholder {
@@ -775,6 +788,7 @@ body {
     margin: 5px 0;
     display: flex;
     gap: 2px;
+    direction: ltr; /* Всегда слева направо */
 }
 
 .rating-count {
@@ -836,39 +850,123 @@ body {
     margin-bottom: 15px;
 }
 
-/* Выбор рейтинга */
-.rating-select {
+/* Общие стили для звезд рейтинга */
+.stars, .review-rating {
     display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
+    gap: 2px;
+     direction: ltr; /* Всегда слева направо */
+    flex-direction: row; /* Явно указываем направление */
 }
 
-.rating-select span {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-}
-
-.stars {
+/* Стили для выбора рейтинга */
+.rating-select .stars {
+    direction: rtl;
     display: flex;
-    gap: 5px;
+    gap: 2px;
+    justify-content: flex-end; /* Выровнять все дочерние элементы вправо */
 }
 
-.stars input {
+.rating-select .stars input {
     display: none;
 }
 
-.stars label {
+.rating-select .stars label {
     color: #4a4f56;
     cursor: pointer;
     font-size: 1.5rem;
     transition: color 0.2s ease;
 }
 
-.stars input:checked ~ label,
-.stars label:hover,
-.stars label:hover ~ label {
+/* Стиль для выбранных звезд */
+.rating-select .stars input:checked + label,
+.rating-select .stars input:checked ~ input + label {
     color: var(--rating-color);
+}
+
+/* Стиль для звезд при наведении */
+.rating-select .stars label:hover,
+.rating-select .stars label:hover ~ label {
+    color: var(--rating-color);
+}
+/* Стили для отображения рейтинга в отзывах */
+.review-rating {
+    direction: ltr; /* Всегда слева направо */
+    flex-direction: row ;
+}
+
+.review-rating .full-star {
+    color: var(--rating-color);
+}
+
+.review-rating .empty-star {
+    color: #4a4f56;
+}
+/* Стили для контейнера с кнопками */
+.review-actions {
+    display: flex;
+    gap: 10px; /* Расстояние между кнопками */
+    margin-top: 20px; /* Отступ сверху */
+}
+
+/* Стиль для кнопки удаления отзыва */
+.delete-review-btn {
+    background-color: #e74c3c; /* Красный фон */
+    color: white;
+    border: none;
+    padding: 11px 30px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.delete-review-btn:hover {
+    background-color: #c0392b; /* Темнее красный при наведении */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(231, 76, 60, 0.35);
+}
+
+.delete-review-btn:active {
+    transform: translateY(0);
+}
+
+/* Стиль для кнопки обновления отзыва */
+.submit-review{
+    background-color: #C71585; /* Фиолетовый фон */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.submit-review:hover {
+    background-color: #a3126b; /* Темнее фиолетовый при наведении */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(199, 21, 133, 0.35);
+}
+
+.submit-review:active {
+    transform: translateY(0);
+}
+
+/* Стили для сводки рейтинга */
+.rating-stars {
+    direction: ltr; /* Всегда слева направо */
+}
+
+.rating-stars .full-star {
+    color: var(--rating-color);
+}
+
+.rating-stars .half-star {
+    color: var(--rating-color);
+}
+
+.rating-stars .empty-star {
+    color: #4a4f56;
 }
 
 /* Поле ввода отзыва */
