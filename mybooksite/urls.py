@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from books import views
 from books.views import RegisterView
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include("django.contrib.auth.urls")),
@@ -18,6 +19,7 @@ urlpatterns = [
     path('confirm-email/<str:token>/', views.confirm_email, name='confirm_email'),  
     path('registration-success/', views.registration_success, name='registration_success'),  # Добавленный маршрут
 ]
+
 
 # Для статических файлов
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
