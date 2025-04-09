@@ -277,18 +277,21 @@ def update_progress(request):
         user_book.progress = progress
         user_book.progress_percent = progress_percent
 
-        # Автоматическое обновление статуса, если достигнут 100% прогресс
-        if progress_percent >= 100 and user_book.status != 'read':
+        # Логика обновления статуса
+        if progress_percent >= 100:
             user_book.status = 'read'
+        elif user_book.status == 'read' and progress_percent < 100:
+            # Если книга была прочитана, но прогресс уменьшили - меняем статус
+            user_book.status = 'reading'
 
         user_book.save()
-        user_book.refresh_from_db()  # Обновляем данные из БД
+        user_book.refresh_from_db()
 
         return JsonResponse({
             "status": "success",
             "progress": progress,
             "progress_percent": progress_percent,
-            "current_status": user_book.status  # Добавляем текущий статус в ответ
+            "current_status": user_book.status
         })
 
     except UserBook.DoesNotExist:

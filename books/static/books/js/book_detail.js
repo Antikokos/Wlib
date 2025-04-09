@@ -348,39 +348,41 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    function updateProgress(pagesRead, saveToServer) {
-        if (!progressFill || !progressText || !currentPageEl || totalPages <= 0) {
-            if (totalPages <= 0) console.warn("Cannot update progress: total pages is 0.");
-            else console.warn("Progress elements missing, cannot update progress display.");
-            return;
-        }
-        pagesRead = Math.max(0, Math.min(totalPages, pagesRead));
-        const percentage = (pagesRead / totalPages) * 100;
-        const roundedPercentage = Math.round(percentage * 10) / 10;
-        progressFill.style.width = percentage + "%";
-        progressText.textContent = roundedPercentage + "%";
-        currentPageEl.textContent = pagesRead;
-        if (pageInput && document.activeElement !== pageInput) {
-            pageInput.value = pagesRead;
-        }
-        updateSliderTooltip(pagesRead);
-        console.log(`Progress updated: ${pagesRead}/${totalPages} pages (${roundedPercentage}%) - SaveToServer: ${saveToServer}`);
-        if (saveToServer && isAuthenticated && bookId) {
-            if (!hasBookInCollection) {
-                updateBookStatus("reading");
-                hasBookInCollection = true;
-            }
-            saveProgressToServer(pagesRead);
-            if (pagesRead === totalPages) {
-                updateBookStatus("read");
-                updateBooksCountersInProfile(); // Добавлено для синхронизации
-            }
-            showNotification("Данные успешно обновлены");
-        } else {
-            isProgressChanged = true;
-        }
-        if (saveToServer && pagesRead > 0) createSparkles(progressFill);
+function updateProgress(pagesRead, saveToServer) {
+    if (!progressFill || !progressText || !currentPageEl || totalPages <= 0) {
+        if (totalPages <= 0) console.warn("Cannot update progress: total pages is 0.");
+        else console.warn("Progress elements missing, cannot update progress display.");
+        return;
     }
+
+    pagesRead = Math.max(0, Math.min(totalPages, pagesRead));
+    const percentage = (pagesRead / totalPages) * 100;
+    const roundedPercentage = Math.round(percentage * 10) / 10;
+
+    progressFill.style.width = percentage + "%";
+    progressText.textContent = roundedPercentage + "%";
+    currentPageEl.textContent = pagesRead;
+
+    if (pageInput && document.activeElement !== pageInput) {
+        pageInput.value = pagesRead;
+    }
+
+    updateSliderTooltip(pagesRead);
+    console.log(`Progress updated: ${pagesRead}/${totalPages} pages (${roundedPercentage}%) - SaveToServer: ${saveToServer}`);
+
+    if (saveToServer && isAuthenticated && bookId) {
+        if (!hasBookInCollection) {
+            updateBookStatus("reading");
+            hasBookInCollection = true;
+        }
+        saveProgressToServer(pagesRead);
+        showNotification("Данные успешно обновлены");
+    } else {
+        isProgressChanged = true;
+    }
+
+    if (saveToServer && pagesRead > 0) createSparkles(progressFill);
+}
 
     function updateSliderTooltip(pages) {
         if (!sliderTooltip || !progressSlider || totalPages <= 0) return;
