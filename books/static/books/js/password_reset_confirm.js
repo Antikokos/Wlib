@@ -1,3 +1,4 @@
+
 // Конфигурация
 const CONFIG = {
     MIN_PASSWORD_LENGTH: 8,

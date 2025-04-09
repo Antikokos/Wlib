@@ -1,3 +1,27 @@
+// Градиент фон
+
+
+document.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth) * 100;
+    const y = (e.clientY / window.innerHeight) * 100;
+
+    document.body.style.background = `
+        radial-gradient(
+            circle at ${x}% ${y}%,
+            #ee7752, #e73c7e, #23a6d5, #23d5ab
+        )`;
+});
+
+
+
+document.body.style.background = `
+    radial-gradient(
+        circle at ${x}% ${y}%, 
+        #1a1a2e, #16213e, #0f3460
+    )`;
+document.body.style.backgroundSize = '400% 400%';
+
+
 // Конфигурация
 const CONFIG = {
     MIN_PASSWORD_LENGTH: 8,
