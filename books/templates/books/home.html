@@ -4,6 +4,28 @@
 {% block extra_head %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css">
+    <style>
+        /* Стили для карусели */
+        .book-carousel {
+            margin: 20px 0;
+        }
+        .book-carousel .slick-list {
+            padding: 20px 0;
+        }
+        .book-carousel .slick-slide {
+            margin: 0 10px;
+        }
+        .book-carousel .slick-prev,
+        .book-carousel .slick-next {
+            z-index: 1;
+        }
+        .book-carousel .slick-prev {
+            left: -25px;
+        }
+        .book-carousel .slick-next {
+            right: -25px;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -88,5 +110,39 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
-<script src="{% static 'books/js/main.js' %}"></script>
+<script>
+    // Инициализация каруселей после загрузки страницы
+    $(document).ready(function() {
+        $('.book-carousel').each(function() {
+            const $carousel = $(this);
+            const $items = $carousel.find('.book-card');
+
+            if ($items.length > 0) {
+                $carousel.slick({
+                    slidesToShow: Math.min(5, $items.length),
+                    slidesToScroll: Math.min(2, $items.length),
+                    infinite: $items.length >= 5,
+                    prevArrow: '<button type="button" class="slick-prev">←</button>',
+                    nextArrow: '<button type="button" class="slick-next">→</button>',
+                    responsive: [
+                        {
+                            breakpoint: 1024,
+                            settings: {
+                                slidesToShow: Math.min(3, $items.length),
+                                slidesToScroll: 1
+                            }
+                        },
+                        {
+                            breakpoint: 600,
+                            settings: {
+                                slidesToShow: Math.min(2, $items.length),
+                                slidesToScroll: 1
+                            }
+                        }
+                    ]
+                });
+            }
+        });
+    });
+</script>
 {% endblock %}

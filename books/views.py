@@ -52,6 +52,13 @@ def home(request):
         'manga_books': get_books_by_genre('Манга'),
         'romance_books': get_books_by_genre('Романтика'),
     }
+    # Передаем данные в JS
+    context['js_data'] = {
+        'fantasy_books': context['fantasy_books'],
+        'detective_books': context['detective_books'],
+        'manga_books': context['manga_books'],
+        'romance_books': context['romance_books'],
+    }
     return render(request, 'books/home.html', context)
 
 def search(request):
