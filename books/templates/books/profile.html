@@ -113,6 +113,29 @@
             box-shadow: 0 8px 20px rgba(199, 21, 133, 0.5);
         }
 
+        .change-password-btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(199, 21, 133, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none; /* Убираем подчеркивание ссылки */
+            margin-right: 10px; /* Добавляем отступ справа */
+        }
+
+        .change-password-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(199, 21, 133, 0.5);
+        }
+
         .tabs {
             display: flex;
             margin: 2rem 0;
@@ -523,18 +546,20 @@
             <div class="info">
                 <h2>{{ user.username }}</h2>
                 <p>Email: {{ user.email }}</p>
+                <!-- Добавляем кнопку "Сменить пароль" -->
+                <a href="{% url 'password_change' %}" class="change-password-btn">
+                    <i class="fas fa-key"></i> Пароль
+                </a>
                 <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">
                     <i class="fas fa-sign-out-alt"></i> Выйти
                 </button>
             </div>
         </div>
-
         <div class="tabs">
             <div class="tab active" onclick="switchTab(0)">Прочитано</div>
             <div class="tab" onclick="switchTab(1)">Читаю</div>
             <div class="tab" onclick="switchTab(2)">В планах</div>
         </div>
-
         <div class="content active" id="tab-0">
             <h3>Прочитанные книги</h3>
             <div class="book-list">
@@ -566,7 +591,6 @@
                 {% endif %}
             </div>
         </div>
-
         <div class="content" id="tab-1">
             <h3>Сейчас читаю</h3>
             <div class="book-list">
@@ -598,7 +622,6 @@
                 {% endif %}
             </div>
         </div>
-
         <div class="content" id="tab-2">
             <h3>Планы на чтение</h3>
             <div class="book-list">
@@ -631,7 +654,6 @@
             </div>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Обработчики удаления книг
@@ -639,14 +661,11 @@
                 button.addEventListener('click', async function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-
                     const bookItem = this.closest('.profile-book-item');
                     const bookList = bookItem.parentElement;
                     const bookId = this.getAttribute('data-book-id');
-
                     // Немедленно запускаем анимацию удаления
                     bookItem.classList.add('book-removing');
-
                     try {
                         const response = await fetch('/remove_book/', {
                             method: 'POST',
@@ -656,15 +675,12 @@
                             },
                             body: JSON.stringify({ book_id: bookId })
                         });
-
                         const data = await response.json();
-
                         if (data.success) {
                             // После анимации удаляем элемент из DOM
                             setTimeout(() => {
                                 bookItem.remove();
                                 showNotification('Книга удалена из закладок', false);
-
                                 // Если это была последняя книга, показываем пустое состояние
                                 if (bookList.querySelectorAll('.profile-book-item').length === 0) {
                                     showEmptyState(bookList);
@@ -681,12 +697,10 @@
                     }
                 });
             });
-
             // Функция показа пустого состояния
             function showEmptyState(bookList) {
                 const tabId = bookList.parentElement.id;
                 let icon, text;
-
                 switch(tabId) {
                     case 'tab-0':
                         icon = 'fa-book-open';
@@ -701,17 +715,14 @@
                         text = 'У вас пока нет книг в планах на чтение';
                         break;
                 }
-
                 const emptyState = document.createElement('div');
                 emptyState.className = 'empty-state';
                 emptyState.innerHTML = `
                     <i class="fas ${icon}"></i>
                     ${text}
                 `;
-
                 bookList.appendChild(emptyState);
             }
-
             // Функция показа уведомлений
             function showNotification(message, isError) {
                 const notification = document.createElement('div');
@@ -721,17 +732,14 @@
                     ${message}
                 `;
                 document.body.appendChild(notification);
-
                 // Показываем уведомление
                 setTimeout(() => notification.classList.add('show'), 10);
-
                 // Скрываем через 3 секунды
                 setTimeout(() => {
                     notification.classList.remove('show');
                     setTimeout(() => notification.remove(), 300);
                 }, 3000);
             }
-
             // Функция получения куки
             function getCookie(name) {
                 const cookies = document.cookie.split(';');
@@ -744,15 +752,12 @@
                 return null;
             }
         });
-
         // Переключение вкладок
         function switchTab(index) {
             const tabs = document.querySelectorAll('.tab');
             const contents = document.querySelectorAll('.content');
-
             tabs.forEach(tab => tab.classList.remove('active'));
             contents.forEach(content => content.classList.remove('active'));
-
             tabs[index].classList.add('active');
             contents[index].classList.add('active');
         }
