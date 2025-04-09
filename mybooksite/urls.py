@@ -3,8 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from books import views
-from books.views import RegisterView, update_progress
-
+from books.views import RegisterView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -16,7 +15,13 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('logout/', views.logout_view, name='logout'),
     path('update_book_status/', views.update_book_status, name='update_book_status'),
-    path("update-progress/", update_progress, name="update_progress"),
-    path('get_book_status/', views.get_book_status, name='get_book_status'),
-    path('remove_book/', views.remove_book, name='remove_book'),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path('confirm-email/<str:token>/', views.confirm_email, name='confirm_email'),  
+    path('registration-success/', views.registration_success, name='registration_success'),  # Добавленный маршрут
+]
+
+# Для статических файлов
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Для медиафайлов (если они используются)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
