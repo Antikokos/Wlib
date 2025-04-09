@@ -46,6 +46,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (bookList.querySelectorAll('.profile-book-item').length === 0) {
                             showEmptyState(bookList);
                         }
+
+                        // Обновляем счетчики книг
+                        updateBooksCounters();
                     }, 400);
                 } else {
                     bookItem.classList.remove('book-removing');
@@ -89,8 +92,35 @@ document.addEventListener('DOMContentLoaded', function() {
         bookList.appendChild(emptyState);
     }
 
+    // Функция обновления счетчиков книг
+    function updateBooksCounters() {
+        const counters = {
+            'read': document.querySelector('.tab[data-tab="read"] .counter'),
+            'reading': document.querySelector('.tab[data-tab="reading"] .counter'),
+            'want-to-read': document.querySelector('.tab[data-tab="want-to-read"] .counter')
+        };
+
+        fetch('/get_books_count/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    for (const [status, counter] of Object.entries(counters)) {
+                        if (counter) {
+                            counter.textContent = data.counts[status] || '0';
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Error updating counters:', error));
+    }
+
     // Функция показа уведомлений
-    function showNotification(message, isError) {
+    function showNotification(message, isError = false) {
+        const existingNotification = document.querySelector('.notification.show');
+        if (existingNotification) {
+            existingNotification.classList.remove('show');
+            setTimeout(() => existingNotification.remove(), 400);
+        }
         const notification = document.createElement('div');
         notification.className = `notification ${isError ? 'error' : 'success'}`;
         notification.innerHTML = `
@@ -99,10 +129,8 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         document.body.appendChild(notification);
 
-        // Показываем уведомление
         setTimeout(() => notification.classList.add('show'), 10);
 
-        // Скрываем через 3 секунды
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 300);
@@ -120,4 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return null;
     }
+
+    // Инициализация счетчиков при загрузке страницы
+    updateBooksCounters();
 });

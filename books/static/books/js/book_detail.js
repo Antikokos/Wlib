@@ -24,38 +24,36 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-function applyColorTheme(dominantColor) {
-    if (!dominantColor || dominantColor.length !== 3) {
-        console.error('Invalid color:', dominantColor);
-        applyDefaultColors();
-        return;
+    function applyColorTheme(dominantColor) {
+        if (!dominantColor || dominantColor.length !== 3) {
+            console.error('Invalid color:', dominantColor);
+            applyDefaultColors();
+            return;
+        }
+
+        const [r, g, b] = dominantColor;
+        const bgColor = `rgba(${r}, ${g}, ${b}, 0.6)`;
+        const mainColor = `rgb(${r}, ${g}, ${b})`;
+        const mainColorLight = `rgb(${Math.min(r + 40, 255)}, ${Math.min(g + 40, 255)}, ${Math.min(b + 40, 255)})`;
+
+        const pageBackground = document.getElementById('page-background');
+        if (pageBackground) {
+            pageBackground.style.backgroundColor = bgColor;
+            console.log('Background color updated:', bgColor);
+        }
+
+        document.documentElement.style.setProperty('--main-color', mainColor);
+        document.documentElement.style.setProperty('--main-color-light', mainColorLight);
     }
 
-    const [r, g, b] = dominantColor;
-    const bgColor = `rgba(${r}, ${g}, ${b}, 0.6)`; // Увеличили прозрачность
-    const mainColor = `rgb(${r}, ${g}, ${b})`;
-    const mainColorLight = `rgb(${Math.min(r + 40, 255)}, ${Math.min(g + 40, 255)}, ${Math.min(b + 40, 255)})`;
-
-    // Применяем цвет к фону
-    const pageBackground = document.getElementById('page-background');
-    if (pageBackground) {
-        pageBackground.style.backgroundColor = bgColor;
-        console.log('Background color updated:', bgColor);
+    function applyDefaultColors() {
+        document.documentElement.style.setProperty('--main-color', '#C71585');
+        document.documentElement.style.setProperty('--main-color-light', '#e0409f');
+        const pageBackground = document.getElementById('page-background');
+        if (pageBackground) {
+            pageBackground.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        }
     }
-
-    // Обновляем CSS-переменные
-    document.documentElement.style.setProperty('--main-color', mainColor);
-    document.documentElement.style.setProperty('--main-color-light', mainColorLight);
-}
-
-function applyDefaultColors() {
-    document.documentElement.style.setProperty('--main-color', '#C71585');
-    document.documentElement.style.setProperty('--main-color-light', '#e0409f');
-    const pageBackground = document.getElementById('page-background');
-    if (pageBackground) {
-        pageBackground.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-    }
-}
 
     const bookCover = document.getElementById('book-cover');
     if (bookCover) {
@@ -101,7 +99,7 @@ function applyDefaultColors() {
         });
     }
 
-    // --- Инициализация элементов управления (только если пользователь авторизован) ---
+    // --- Инициализация элементов управления ---
     let statusMainButton, statusMainText, statusButtons, progressSlider, sliderTooltip,
         decreaseBtn, increaseBtn, pageInput, updatePagesBtn, currentPageEl, totalPagesEl,
         progressFill, progressText, bookDescription;
@@ -375,6 +373,7 @@ function applyDefaultColors() {
             saveProgressToServer(pagesRead);
             if (pagesRead === totalPages) {
                 updateBookStatus("read");
+                updateBooksCountersInProfile(); // Добавлено для синхронизации
             }
             showNotification("Данные успешно обновлены");
         } else {
@@ -406,11 +405,17 @@ function applyDefaultColors() {
         })
             .then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
             .then(data => {
-                if (data.status !== "success") {
+                if (data.status === "success") {
+                    console.log("Progress saved successfully.");
+                    // Обновляем статус, если он изменился
+                    if (data.current_status && data.current_status !== currentBookStatus) {
+                        currentBookStatus = data.current_status;
+                        updateStatusButton(data.current_status);
+                        updateBooksCountersInProfile();
+                    }
+                } else {
                     console.error("Error saving progress:", data.message);
                     showNotification(`Ошибка сохранения: ${data.message || 'Неизвестная ошибка'}`, true);
-                } else {
-                    console.log("Progress saved successfully.");
                 }
             })
             .catch(error => {
@@ -418,6 +423,28 @@ function applyDefaultColors() {
                 const message = error.message || (typeof error === 'string' ? error : 'Ошибка соединения');
                 showNotification(`Ошибка сохранения: ${message}`, true);
             });
+    }
+
+    function updateBooksCountersInProfile() {
+        fetch('/get_books_count/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Обновляем счетчики на текущей странице, если они есть
+                    const counters = {
+                        'read': document.querySelector('.tab[data-tab="read"] .counter'),
+                        'reading': document.querySelector('.tab[data-tab="reading"] .counter'),
+                        'want-to-read': document.querySelector('.tab[data-tab="want-to-read"] .counter')
+                    };
+
+                    for (const [status, counter] of Object.entries(counters)) {
+                        if (counter) {
+                            counter.textContent = data.counts[status] || '0';
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Error updating counters:', error));
     }
 
     function updateBookStatus(status) {
@@ -460,6 +487,7 @@ function applyDefaultColors() {
                 currentBookStatus = status;
                 hasBookInCollection = true;
                 updateStatusButton(status);
+                updateBooksCountersInProfile(); // Добавлено для синхронизации
                 showNotification(`Статус книги обновлен на "${getStatusName(status)}"`);
                 if (status === 'read' && totalPages > 0) {
                     updateProgress(totalPages, false);
