@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from books import views
 from books.views import RegisterView, update_progress
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth import views as auth_views
 
 
@@ -22,6 +22,7 @@ urlpatterns = [
     path('get_book_status/', views.get_book_status, name='get_book_status'),
     path('remove_book/', views.remove_book, name='remove_book'),
     path('book/<str:book_id>/add_review/', views.add_review, name='add_review'),
+    path('delete_review/<int:review_id>/', views.delete_review, name='delete_review'),
 
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
@@ -31,7 +32,5 @@ urlpatterns = [
         template_name='registration/change_password.html',
         success_url=reverse_lazy('profile')  # или куда ты хочешь переадресацию
     ), name='password_change')
-
     
-path('delete_review/<int:review_id>/', views.delete_review, name='delete_review'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -91,7 +91,7 @@ async function handleSubmit(e) {
     if (!notSameValidation.valid) setError(password1, notSameValidation.message);
 
     if (passwordValidation.valid && matchValidation.valid && notSameValidation.valid) {
-        showNotification('Пароль успешно изменен!', 'success');
+        // showNotification('Пароль успешно изменен!', 'success');
         setTimeout(() => form.submit(), 1500);
     } else {
         setLoadingState(false);

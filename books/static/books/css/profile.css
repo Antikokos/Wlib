@@ -101,6 +101,29 @@ body {
     box-shadow: 0 8px 20px rgba(199, 21, 133, 0.5);
 }
 
+.change-password-btn {
+    padding: 0.7rem 1.5rem;
+    border: none;
+    background: linear-gradient(to right, var(--primary), var(--primary-dark));
+    color: white;
+    border-radius: 2rem;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(199, 21, 133, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none; /* Убираем подчеркивание ссылки */
+    margin-right: 10px; /* Добавляем отступ справа */
+}
+
+.change-password-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(199, 21, 133, 0.5);
+}
+
 .tabs {
     display: flex;
     margin: 2rem 0;
