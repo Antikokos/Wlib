@@ -158,3 +158,12 @@ CSRF_TRUSTED_ORIGINS = [
     "https://wlib-production.up.railway.app",
     "https://www.wlib-production.up.railway.app",
 ]
+
+# Отправка писем для сброса пароля
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'fferanyt@gmail.com'  # твой email 
+EMAIL_HOST_PASSWORD = 'pbrvlpzhnlolarov'  # сюда вставь пароль приложения
+DEFAULT_FROM_EMAIL = 'Wlib'  # или как хочешь

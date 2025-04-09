@@ -22,14 +22,14 @@
             <h2 class="modal-title fade-in">Вход на сайт</h2>
 
             <!-- Социальные кнопки -->
-            <div class="social-login">
+            <!-- <div class="social-login">
                 <p>Войти через социальные сети</p>
                 <div class="social-buttons">
                     <button class="social-button vk" onclick="handleSocialAuth('VK')"><i class="fab fa-vk"></i></button>
                     <button class="social-button google" onclick="handleSocialAuth('Google')"><i class="fab fa-google"></i></button>
                     <button class="social-button yandex" onclick="handleSocialAuth('Yandex')"><i class="fab fa-yandex"></i></button>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Форма входа -->
             <form method="post" id="login-form">
@@ -45,14 +45,14 @@
                     <div class="error-message" id="password-error"></div>
                     <i class="fas fa-exclamation-circle error-icon"></i>
                 </div>
-                {{ form.errors }}
+                <!-- {{ form.errors }} -->
                 <button type="submit" class="submit-button fade-in">Войти</button>
             </form>
 
             <!-- Ссылки для перехода на страницу регистрации и восстановления пароля -->
             <div class="links">
                 <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться!</a></p>
-                <a href="#" onclick="handleForgotPassword()">Забыли пароль?</a>
+                <a href="{% url 'password_reset' %}">Забыли пароль?</a>
             </div>
         </div>
     </div>

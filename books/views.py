@@ -230,15 +230,27 @@ def add_review(request, book_id):
 
     return redirect('book_detail', book_id=book_id)
 
+from django.contrib.auth import authenticate, login
 
 class RegisterView(FormView):
     template_name = 'books/register.html'
     form_class = RegisterForm
-    success_url = reverse_lazy('login')
+    success_url = reverse_lazy('home')  # Перенаправляем на главную
 
     def form_valid(self, form):
-        form.save()
+        user = form.save()
+
+        # Аутентифицируем пользователя
+        username = form.cleaned_data.get('username')
+        raw_password = form.cleaned_data.get('password1')
+        user = authenticate(self.request, username=username, password=raw_password)
+
+        if user is not None:
+            login(self.request, user)  # Логиним пользователя
+
         return super().form_valid(form)
+
+
 
 @login_required
 @csrf_protect

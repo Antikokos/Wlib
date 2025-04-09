@@ -18,18 +18,20 @@
             <div class="info">
                 <h2>{{ user.username }}</h2>
                 <p>Email: {{ user.email }}</p>
+                <!-- Добавляем кнопку "Сменить пароль" -->
+                <a href="{% url 'password_change' %}" class="change-password-btn">
+                    <i class="fas fa-key"></i> Пароль
+                </a>
                 <button class="logout-btn" onclick="location.href='{% url 'logout' %}'">
                     <i class="fas fa-sign-out-alt"></i> Выйти
                 </button>
             </div>
         </div>
-
         <div class="tabs">
             <div class="tab active" onclick="switchTab(0)">Прочитано</div>
             <div class="tab" onclick="switchTab(1)">Читаю</div>
             <div class="tab" onclick="switchTab(2)">В планах</div>
         </div>
-
         <div class="content active" id="tab-0">
             <h3>Прочитанные книги</h3>
             <div class="book-list">
@@ -60,7 +62,6 @@
                 {% endif %}
             </div>
         </div>
-
         <div class="content" id="tab-1">
             <h3>Сейчас читаю</h3>
             <div class="book-list">
@@ -91,7 +92,6 @@
                 {% endif %}
             </div>
         </div>
-
         <div class="content" id="tab-2">
             <h3>Планы на чтение</h3>
             <div class="book-list">
