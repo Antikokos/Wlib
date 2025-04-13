@@ -4,6 +4,42 @@
 {% block extra_head %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css">
+    <style>
+        /* Дополнительные стили для карусели */
+        .book-carousel {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .book-carousel .slick-list {
+            padding: 20px 0;
+        }
+
+        .book-carousel .slick-slide {
+            margin: 0 10px;
+        }
+
+        .book-carousel .slick-prev,
+        .book-carousel .slick-next {
+            z-index: 1;
+            width: 40px;
+            height: 40px;
+        }
+
+        .book-carousel .slick-prev {
+            left: -50px;
+        }
+
+        .book-carousel .slick-next {
+            right: -50px;
+        }
+
+        .book-carousel .slick-prev:before,
+        .book-carousel .slick-next:before {
+            font-size: 40px;
+            color: #C71585;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}

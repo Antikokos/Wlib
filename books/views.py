@@ -1,5 +1,7 @@
 import json
 import logging
+import csv
+from pathlib import Path
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -9,131 +11,130 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 from django.contrib import messages
 from django.db.models import Avg
-import requests
+from django.conf import settings
 from .forms import RegisterForm
 from .models import UserBook, BookReview
-import re
+from django.contrib.auth import authenticate, login
 
 logger = logging.getLogger(__name__)
 
-API_KEY = 'AIzaSyBzihVeBYzNjUjj-o-7DJCucdcbgj1wuU4'
+# Путь к файлу с книгами
+BOOKS_CSV_PATH = Path(settings.BASE_DIR) / 'books/data/books_import.csv'
 DEFAULT_BOOK_COVER = '/static/books/images/default_book_cover.jpg'
-API_TIMEOUT = 10
+
+
+# Загрузка данных о книгах из CSV
+def load_books_data():
+    books = []
+    try:
+        with open(BOOKS_CSV_PATH, mode='r', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                # Обработка рейтинга (заменяем запятые на точки)
+                rating = row['rating'].replace(',', '.') if row['rating'] else None
+                books.append({
+                    'id': row['isbn_13'],  # Используем ISBN как ID
+                    'title': row['title'],
+                    'authors': row['authors'],
+                    'publisher': row['publisher'],
+                    'published_date': row['published_date'],
+                    'page_count': int(row['page_count']) if row['page_count'] else 0,
+                    'description': row['description'],
+                    'genres': row['genres'],
+                    'thumbnail': row['thumbnail_url'],
+                    'isbn_13': row['isbn_13'],
+                    'language': row['language'],
+                    'rating': float(rating) if rating else None,
+                })
+    except Exception as e:
+        logger.error(f"Ошибка при загрузке данных о книгах: {e}")
+    return books
+
+
+# Получаем все книги при старте приложения
+ALL_BOOKS = load_books_data()
 
 
 def get_books_by_genre(genre, max_results=40):
-    url = f'https://www.googleapis.com/books/v1/volumes?q=subject:{genre}&maxResults={max_results}&key={API_KEY}'
-    try:
-        response = requests.get(url, timeout=API_TIMEOUT)
-        response.raise_for_status()
-        data = response.json()
-        books = []
-        if 'items' in data:
-            for item in data['items']:
-                volume_info = item.get('volumeInfo', {})
-                book = {
-                    'id': item['id'],
-                    'title': volume_info.get('title', 'Без названия'),
-                    'authors': ', '.join(volume_info.get('authors', ['Неизвестные авторы'])),
-                    'publisher': volume_info.get('publisher', 'Не указан'),
-                    'page_count': volume_info.get('pageCount', 0),
-                    'published_date': volume_info.get('publishedDate', 'Не указан'),
-                    'thumbnail': volume_info.get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
-                }
-                books.append(book)
-        return books
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Ошибка при запросе книг по жанру {genre}: {e}")
-        return []
+    books = []
+    for book in ALL_BOOKS:
+        if genre.lower() in book['genres'].lower():
+            books.append({
+                'id': book['isbn_13'],
+                'title': book['title'],
+                'authors': book['authors'],
+                'publisher': book['publisher'],
+                'page_count': book['page_count'],
+                'published_date': book['published_date'],
+                'thumbnail': book['thumbnail'] or DEFAULT_BOOK_COVER,
+            })
+            if len(books) >= max_results:
+                break
+    return books
 
 
 def home(request):
     context = {
-        'fantasy_books': get_books_by_genre('fantasy'),
-        'detective_books': get_books_by_genre('detective'),
-        'manga_books': get_books_by_genre('manga'),
-        'romance_books': get_books_by_genre('romance'),
+        'fantasy_books': get_books_by_genre('Фантастика'),
+        'detective_books': get_books_by_genre('Детектив'),
+        'manga_books': get_books_by_genre('Манга'),
+        'romance_books': get_books_by_genre('Романтика'),
     }
     return render(request, 'books/home.html', context)
 
 
 def search(request):
-    query = request.GET.get('q', '').strip()
+    query = request.GET.get('q', '').strip().lower()
     if not query:
         return redirect('home')
-    try:
-        url = f'https://www.googleapis.com/books/v1/volumes?q={query}&maxResults=40&key={API_KEY}'
-        response = requests.get(url, timeout=API_TIMEOUT)
-        response.raise_for_status()
-        data = response.json()
-        books = []
-        if 'items' in data:
-            for item in data['items']:
-                volume_info = item.get('volumeInfo', {})
-                book = {
-                    'id': item['id'],
-                    'title': volume_info.get('title', 'Без названия'),
-                    'authors': ', '.join(volume_info.get('authors', ['Неизвестные авторы'])),
-                    'publisher': volume_info.get('publisher', 'Не указан'),
-                    'page_count': volume_info.get('pageCount', 0),
-                    'published_date': volume_info.get('publishedDate', 'Не указан'),
-                    'thumbnail': volume_info.get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
-                }
-                books.append(book)
-        return render(request, 'books/search.html', {
-            'books': books,
-            'query': query,
-            'total_books': len(books)
-        })
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Ошибка при поиске книг: {e}")
-        messages.error(request, 'Произошла ошибка при поиске книг')
-        return redirect('home')
+
+    books = []
+    for book in ALL_BOOKS:
+        if (query in book['title'].lower() or
+                query in book['authors'].lower() or
+                query in book['publisher'].lower() or
+                query in book['description'].lower()):
+            books.append({
+                'id': book['isbn_13'],
+                'title': book['title'],
+                'authors': book['authors'],
+                'publisher': book['publisher'],
+                'page_count': book['page_count'],
+                'published_date': book['published_date'],
+                'thumbnail': book['thumbnail'] or DEFAULT_BOOK_COVER,
+            })
+
+    return render(request, 'books/search.html', {
+        'books': books,
+        'query': query,
+        'total_books': len(books)
+    })
 
 
 def book_detail(request, book_id):
-    try:
-        url = f'https://www.googleapis.com/books/v1/volumes/{book_id}?key={API_KEY}'
-        response = requests.get(url, timeout=API_TIMEOUT)
-        if response.status_code == 404:
-            raise Http404("Книга не найдена")
-        response.raise_for_status()
-        book = response.json()
-        volume_info = book.get('volumeInfo', {})
+    book_data = None
+    for book in ALL_BOOKS:
+        if book['isbn_13'] == book_id:
+            book_data = {
+                'id': book['isbn_13'],
+                'title': book['title'],
+                'authors': book['authors'],
+                'publisher': book['publisher'],
+                'page_count': book['page_count'],
+                'published_date': book['published_date'],
+                'thumbnail': book['thumbnail'] or DEFAULT_BOOK_COVER,
+                'description': book['description'],
+                'language': book['language'],
+                'rating': book['rating'],
+                'rating_count': 0,  # У нас нет данных о количестве оценок
+                'genre': book['genres'],
+                'isbn': book['isbn_13'],
+                'is_readable_online': False,  # Нет информации о доступности онлайн
+            }
+            break
 
-        industry_identifiers = volume_info.get('industryIdentifiers', [])
-        isbn = next(
-            (id['identifier'] for id in industry_identifiers
-             if id['type'] in ['ISBN_10', 'ISBN_13']),
-            '-'
-        )
-
-        categories = volume_info.get('categories', [])
-        genre_text = 'Не указан'
-        if categories:
-            genres = [genre.strip() for category in categories for genre in category.split('/')]
-            genres = list(set(genres))[:3]
-            genre_text = ', '.join(genres) if genres else 'Не указан'
-
-        book_data = {
-            'id': book['id'],
-            'title': volume_info.get('title', 'Без названия'),
-            'authors': ', '.join(volume_info.get('authors', ['Неизвестные авторы'])),
-            'publisher': volume_info.get('publisher', 'Не указан'),
-            'page_count': volume_info.get('pageCount', 0),
-            'published_date': volume_info.get('publishedDate', 'Не указан'),
-            'thumbnail': volume_info.get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
-            'description': volume_info.get('description', 'Описание отсутствует'),
-            'language': volume_info.get('language', 'Неизвестно'),
-            'rating': volume_info.get('averageRating'),
-            'rating_count': volume_info.get('ratingsCount', 0),
-            'genre': genre_text,
-            'isbn': isbn,
-            'is_readable_online': book.get('accessInfo', {}).get('webReaderLink') is not None,
-        }
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Ошибка при получении деталей книги {book_id}: {e}")
-        raise Http404("Не удалось загрузить информацию о книге")
+    if not book_data:
+        raise Http404("Книга не найдена")
 
     user_book_data = {
         'has_book': False,
@@ -196,6 +197,7 @@ def book_detail(request, book_id):
     return render(request, 'books/book_detail.html', context)
 
 
+# Остальные функции остаются без изменений
 @login_required
 @csrf_protect
 def add_review(request, book_id):
@@ -230,26 +232,22 @@ def add_review(request, book_id):
 
     return redirect('book_detail', book_id=book_id)
 
-from django.contrib.auth import authenticate, login
 
 class RegisterView(FormView):
     template_name = 'books/register.html'
     form_class = RegisterForm
-    success_url = reverse_lazy('home')  # Перенаправляем на главную
+    success_url = reverse_lazy('home')
 
     def form_valid(self, form):
         user = form.save()
-
-        # Аутентифицируем пользователя
         username = form.cleaned_data.get('username')
         raw_password = form.cleaned_data.get('password1')
         user = authenticate(self.request, username=username, password=raw_password)
 
         if user is not None:
-            login(self.request, user)  # Логиним пользователя
+            login(self.request, user)
 
         return super().form_valid(form)
-
 
 
 @login_required
@@ -277,11 +275,9 @@ def update_progress(request):
         user_book.progress = progress
         user_book.progress_percent = progress_percent
 
-        # Логика обновления статуса
         if progress_percent >= 100:
             user_book.status = 'read'
         elif user_book.status == 'read' and progress_percent < 100:
-            # Если книга была прочитана, но прогресс уменьшили - меняем статус
             user_book.status = 'reading'
 
         user_book.save()
@@ -444,26 +440,19 @@ def profile(request):
     books_data = []
 
     for user_book in user_books:
-        try:
-            url = f'https://www.googleapis.com/books/v1/volumes/{user_book.book_id}?key={API_KEY}'
-            response = requests.get(url, timeout=API_TIMEOUT)
-            if response.status_code == 200:
-                book = response.json()
-                volume_info = book.get('volumeInfo', {})
-                book_data = {
-                    'id': book['id'],
-                    'title': volume_info.get('title', 'Без названия'),
-                    'authors': ', '.join(volume_info.get('authors', ['Неизвестные авторы'])),
-                    'thumbnail': volume_info.get('imageLinks', {}).get('thumbnail', DEFAULT_BOOK_COVER),
+        for book in ALL_BOOKS:
+            if book['isbn_13'] == user_book.book_id:
+                books_data.append({
+                    'id': book['isbn_13'],
+                    'title': book['title'],
+                    'authors': book['authors'],
+                    'thumbnail': book['thumbnail'] or DEFAULT_BOOK_COVER,
                     'status': user_book.status,
                     'progress': user_book.progress,
                     'progress_percent': user_book.progress_percent,
-                    'page_count': volume_info.get('pageCount', 0),
-                }
-                books_data.append(book_data)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Ошибка при получении данных книги: {e}")
-            continue
+                    'page_count': book['page_count'],
+                })
+                break
 
     books_by_status = {
         'read_books': [b for b in books_data if b['status'] == 'read'],
