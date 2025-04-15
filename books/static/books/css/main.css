@@ -183,19 +183,23 @@ h1, h2, h3 {
     transform: translateY(-5px); /* Сдвиг текста вверх */
 }
 
-/* Стили для изображения книги */
 .book-image {
-    width: 150px; /* Ширина изображения */
-    height: 200px; /* Высота изображения */
-    object-fit: cover; /* Чтобы изображение заполняло блок */
-    background-position: center; /* Центрирование изображения */
-    background-repeat: no-repeat;
-    border-radius: 4px;
-    margin-bottom: 10px;
+    width: 160px;
+    height: 220px;
+    margin: 0 auto 10px;
+    display: flex;
+    justify-content: center;
     align-items: center;
-    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 4px;
+    background: transparent; /* убираем фон */
+}
+
+.book-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
     display: block;
-    transition: transform 0.3s ease;
 }
 
 /* Стили для информации о книге */

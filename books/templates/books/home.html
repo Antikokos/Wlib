@@ -52,7 +52,9 @@
             {% for book in fantasy_books %}
                 <div class="book-card">
                     <a href="{% url 'book_detail' book.id %}">
-                        <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                        <div class="book-image">
+                            <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
+                        </div>
                         <div class="book-info">
                             <h3>{{ book.title }}</h3>
                             <p>Автор(ы): {{ book.authors }}</p>
@@ -71,7 +73,9 @@
             {% for book in detective_books %}
                 <div class="book-card">
                     <a href="{% url 'book_detail' book.id %}">
-                        <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                        <div class="book-image">
+                            <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
+                        </div>
                         <div class="book-info">
                             <h3>{{ book.title }}</h3>
                             <p>Автор(ы): {{ book.authors }}</p>
@@ -90,7 +94,9 @@
             {% for book in manga_books %}
                 <div class="book-card">
                     <a href="{% url 'book_detail' book.id %}">
-                        <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                        <div class="book-image">
+                            <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
+                        </div>
                         <div class="book-info">
                             <h3>{{ book.title }}</h3>
                             <p>Автор(ы): {{ book.authors }}</p>
@@ -109,7 +115,9 @@
             {% for book in romance_books %}
                 <div class="book-card">
                     <a href="{% url 'book_detail' book.id %}">
-                        <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+                        <div class="book-image">
+                            <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
+                        </div>
                         <div class="book-info">
                             <h3>{{ book.title }}</h3>
                             <p>Автор(ы): {{ book.authors }}</p>
