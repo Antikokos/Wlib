@@ -196,10 +196,9 @@ def book_detail(request, book_id):
 
     return render(request, 'books/book_detail.html', context)
 
-
-# Остальные функции остаются без изменений
 @login_required
 @csrf_protect
+
 def add_review(request, book_id):
     if request.method != 'POST':
         return redirect('home')
@@ -249,9 +248,6 @@ class RegisterView(FormView):
 
         return super().form_valid(form)
 
-
-@login_required
-@csrf_protect
 def update_progress(request):
     if request.method != "POST":
         return JsonResponse({
@@ -302,9 +298,6 @@ def update_progress(request):
             "message": "Внутренняя ошибка сервера"
         }, status=500)
 
-
-@login_required
-@csrf_protect
 def update_book_status(request):
     if request.method != 'POST':
         return JsonResponse({
@@ -352,9 +345,6 @@ def update_book_status(request):
             'message': 'Внутренняя ошибка сервера'
         }, status=500)
 
-
-@login_required
-@csrf_protect
 def remove_book(request):
     if request.method != 'POST':
         return JsonResponse({
@@ -396,7 +386,6 @@ def remove_book(request):
         }, status=500)
 
 
-@login_required
 def get_book_status(request):
     book_id = request.GET.get('book_id')
     if not book_id:
@@ -413,8 +402,6 @@ def get_book_status(request):
     except UserBook.DoesNotExist:
         return JsonResponse({'exists': False})
 
-
-@login_required
 def get_books_count(request):
     try:
         counts = {
@@ -433,8 +420,6 @@ def get_books_count(request):
             'message': 'Ошибка при получении количества книг'
         }, status=500)
 
-
-@login_required
 def profile(request):
     user_books = UserBook.objects.filter(user=request.user)
     books_data = []
@@ -467,9 +452,6 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
-
-@login_required
-@csrf_protect
 def delete_review(request, review_id):
     try:
         review = BookReview.objects.get(id=review_id, user=request.user)

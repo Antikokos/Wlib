@@ -21,7 +21,7 @@ function validatePassword(value) {
         return { valid: false, message: 'Пароль не должен содержать кириллицу' };
     }
     if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])/.test(value)) {
-        return { valid: false, message: 'Минимум 1 заглавную, 1 строчную букву и 1 цифру' };
+        return { valid: false, message: 'Минимум 1 заглавная, 1 строчная буква и 1 цифра' };
     }
     return { valid: true };
 }
@@ -35,14 +35,6 @@ function validatePasswordMatch(p1, p2) {
 function validatePasswordNotSame(oldPass, newPass) {
     if (oldPass === newPass) return { valid: false, message: 'Новый пароль не должен совпадать со старым' };
     return { valid: true };
-}
-
-function setError(input, message = '') {
-    const group = input.closest('.input-group');
-    if (!group) return;
-    group.classList.toggle('error', !!message);
-    const errorEl = group.querySelector('.error-message');
-    if (errorEl) errorEl.textContent = message;
 }
 
 function togglePasswordVisibility(inputId) {
@@ -72,11 +64,23 @@ function setLoadingState(isLoading) {
     form.querySelector('button[type="submit"]').disabled = isLoading;
 }
 
+function setError(input, message = '') {
+    const group = input.closest('.input-group');
+    if (!group) return;
+    group.classList.toggle('error', !!message);
+    const errorEl = group.querySelector('.error-message');
+    if (errorEl) {
+        // Очищаем существующие серверные ошибки и устанавливаем новое сообщение
+        errorEl.innerHTML = message;
+    }
+}
+
 async function handleSubmit(e) {
     e.preventDefault();
     setLoadingState(true);
 
-    [oldPassword, password1, password2].forEach(setError);
+    // Очищаем все ошибки, включая серверные
+    [oldPassword, password1, password2].forEach(input => setError(input, ''));
 
     const oldPass = oldPassword.value.trim();
     const newPass = password1.value.trim();
@@ -86,14 +90,20 @@ async function handleSubmit(e) {
     const matchValidation = validatePasswordMatch(newPass, confirmPass);
     const notSameValidation = validatePasswordNotSame(oldPass, newPass);
 
+    // Устанавливаем ошибки, если валидация не пройдена
     if (!passwordValidation.valid) setError(password1, passwordValidation.message);
     if (!matchValidation.valid) setError(password2, matchValidation.message);
     if (!notSameValidation.valid) setError(password1, notSameValidation.message);
 
     if (passwordValidation.valid && matchValidation.valid && notSameValidation.valid) {
-        // showNotification('Пароль успешно изменен!', 'success');
-        setTimeout(() => form.submit(), 1500);
+        // Показываем уведомление и отправляем форму
+        // showNotification('Пароль успешно изменён!', 'success');
+        setTimeout(() => {
+            setLoadingState(false);
+            form.submit();
+        }, 1500);
     } else {
+        // Если валидация не пройдена, возвращаем фокус на первое поле с ошибкой
         setLoadingState(false);
         document.querySelector('.input-group.error input')?.focus();
     }
