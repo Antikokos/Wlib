@@ -16,6 +16,10 @@ from .forms import RegisterForm
 from .models import UserBook, BookReview
 from django.contrib.auth import authenticate, login
 
+from django.contrib.auth.views import LoginView
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
+
 logger = logging.getLogger(__name__)
 
 # Путь к файлу с книгами
@@ -462,3 +466,12 @@ def delete_review(request, review_id):
     except Exception as e:
         logger.error(f"Ошибка при удалении отзыва: {e}")
         return JsonResponse({'success': False, 'message': 'Ошибка при удалении отзыва'}, status=500)
+    
+
+class CustomLoginView(LoginView):
+    def post(self, request, *args, **kwargs):
+        try:
+            return super().post(request, *args, **kwargs)
+        except PermissionDenied:
+            messages.error(request, "Вы заблокированы на 10 минут из-за слишком большого количества неудачных попыток входа.")
+            return redirect('login')  # Название URL-шаблона логина

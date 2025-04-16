@@ -3,26 +3,27 @@ from django.urls import path, include, reverse_lazy
 from django.conf import settings
 from django.conf.urls.static import static
 from books import views
-from books.views import RegisterView, update_progress
+from books.views import RegisterView, update_progress, CustomLoginView
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth import views as auth_views
 
-
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin_panelWlib/', admin.site.urls),
     path('accounts/', include("django.contrib.auth.urls")),
     path('', views.home, name='home'),
     path('search/', views.search, name='search'),
     path('book/<str:book_id>/', views.book_detail, name='book_detail'),
-    path('register/', RegisterView.as_view(), name='register'),
     path('profile/', views.profile, name='profile'),
-    path('logout/', views.logout_view, name='logout'),
     path('update_book_status/', views.update_book_status, name='update_book_status'),
     path("update-progress/", update_progress, name="update_progress"),
     path('get_book_status/', views.get_book_status, name='get_book_status'),
     path('remove_book/', views.remove_book, name='remove_book'),
     path('book/<str:book_id>/add_review/', views.add_review, name='add_review'),
     path('delete_review/<int:review_id>/', views.delete_review, name='delete_review'),
+
+    path("login/", CustomLoginView.as_view(), name="login"),
+    path('logout/', views.logout_view, name='logout'),
+    path('register/', RegisterView.as_view(), name='register'),
 
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
