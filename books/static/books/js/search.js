@@ -1,51 +1,14 @@
-// Пагинация - Показать еще
-document.addEventListener("DOMContentLoaded", function() {
-    const loadMoreBtn = document.getElementById('load-more');
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', function() {
-            const hiddenBooks = document.getElementById('hidden-books');
-            const bookContainer = document.getElementById('book-container');
-            const booksCount = document.getElementById('books-count');
-            
-            // Берем первые 10 скрытых книг
-            const booksToShow = Array.from(hiddenBooks.children).slice(0, 10);
-            
-            if (booksToShow.length > 0) {
-                // Добавляем их в основной контейнер
-                booksToShow.forEach(book => {
-                    bookContainer.appendChild(book);
-                });
-                
-                // Обновляем счетчик
-                const currentShown = bookContainer.children.length;
-                const totalBooks = parseInt('{{ total_books }}');
-                booksCount.textContent = `${currentShown}/40`;
-                
-                // Если больше нечего показывать - скрываем кнопку
-                if (hiddenBooks.children.length === 0) {
-                    loadMoreBtn.style.display = 'none';
-                }
-            }
-        });
-    }
-    
-    // Остальной ваш код...
-});
+// Функция для сбора ВСЕХ книг (видимых + скрытых)
+function getAllBooks() {
+    const bookContainer = document.getElementById('book-container');
+    const hiddenBooks = document.getElementById('hidden-books');
+    return [
+        ...Array.from(bookContainer.querySelectorAll('a')),
+        ...Array.from(hiddenBooks.querySelectorAll('a'))
+    ];
+}
 
-
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll('.book-info p').forEach(p => {
-        if (p.textContent.includes("Год выхода:")) {
-            let yearMatch = p.textContent.match(/\d{4}/); // Ищем 4 цифры подряд (год)
-            if (yearMatch) {
-                p.innerHTML = `<span class="bold-text">Год выхода:</span> ${yearMatch[0]}`; // Добавляем класс к "Год выхода:"
-            }
-        }
-    });
-});
-
-
-
+// Ваша оригинальная функция getTextValue (без изменений)
 function getTextValue(book, keyword) {
     const textElement = [...book.querySelectorAll('.book-info p')]
         .find(p => p.textContent.includes(keyword));
@@ -55,64 +18,99 @@ function getTextValue(book, keyword) {
         return 0;
     }
 
-    let value = textElement.textContent.replace(/\D/g, ''); // Оставляем только цифры
+    let value = textElement.textContent.replace(/\D/g, '');
 
     if (keyword === "Год выхода") {
         if (value.length >= 8) {
-            // Если полный формат "YYYY-MM-DD", возвращаем как дату
             return new Date(value.slice(0, 4), value.slice(4, 6) - 1, value.slice(6, 8)).getTime();
         } else if (value.length === 4) {
-            // Если только год "YYYY", возвращаем число
             return parseInt(value, 10);
         }
     }
 
-    return parseInt(value, 10) || 0; // Для страниц и других чисел
+    return parseInt(value, 10) || 0;
 }
 
-function getTextValue(book, keyword) {
-    const textElement = [...book.querySelectorAll('.book-info p')]
-        .find(p => p.textContent.includes(keyword));
-
-    return textElement ? parseInt(textElement.textContent.replace(/\D/g, ''), 10) : 0;
-}
-
+// Обновленная функция сортировки (работает со всеми книгами)
 function sortBooks() {
     const sortOption = document.getElementById("sortOption").value;
-    const books = Array.from(document.querySelectorAll('.book-container a')); // Берем <a>, а не .book-card
-
-    books.sort((a, b) => {
+    const bookContainer = document.getElementById('book-container');
+    const hiddenBooks = document.getElementById('hidden-books');
+    
+    // 1. Получаем ВСЕ книги
+    const allBooks = getAllBooks();
+    
+    // 2. Сортируем
+    allBooks.sort((a, b) => {
         if (sortOption === "pages") {
             return getTextValue(b, "Кол-во страниц") - getTextValue(a, "Кол-во страниц");
         } else if (sortOption === "year") {
-            return getTextValue(b, "Год выхода") - getTextValue(a, "Год выхода"); // Сортировка по году
+            return getTextValue(b, "Год выхода") - getTextValue(a, "Год выхода");
         }
+        return 0;
     });
 
-    const bookContainer = document.getElementById('book-container');
-    bookContainer.append(...books); // Оптимизированное добавление
+    // 3. Очищаем контейнеры
+    bookContainer.innerHTML = '';
+    hiddenBooks.innerHTML = '';
+    
+    // 4. Распределяем книги: первые 20 в основной контейнер, остальные в скрытый
+    allBooks.forEach((book, index) => {
+        if (index < 20) {
+            bookContainer.appendChild(book);
+        } else {
+            hiddenBooks.appendChild(book);
+        }
+    });
+    
+    // 5. Обновляем интерфейс
+    updateBooksCounter();
+    document.getElementById('show-all').style.display = 
+        hiddenBooks.children.length > 0 ? 'inline-block' : 'none';
 }
 
-
+// Обновленный реверс (работает со всеми книгами)
 let isReversed = false;
 
 function reverseBooks() {
-    isReversed = !isReversed; // Переключаем флаг реверса
     const bookContainer = document.getElementById('book-container');
-    const books = Array.from(bookContainer.children).reverse();
+    const hiddenBooks = document.getElementById('hidden-books');
     
-    updateBookList(books);
-
-    // Добавляем/убираем класс поворота
+    // 1. Получаем ВСЕ книги
+    const allBooks = getAllBooks();
+    
+    // 2. Реверсируем
+    allBooks.reverse();
+    
+    // 3. Очищаем контейнеры
+    bookContainer.innerHTML = '';
+    hiddenBooks.innerHTML = '';
+    
+    // 4. Распределяем обратно
+    allBooks.forEach((book, index) => {
+        if (index < 20) {
+            bookContainer.appendChild(book);
+        } else {
+            hiddenBooks.appendChild(book);
+        }
+    });
+    
+    // 5. Обновляем интерфейс
+    isReversed = !isReversed;
     document.querySelector('.reverse-button').classList.toggle('rotated', isReversed);
+    updateBooksCounter();
+    document.getElementById('show-all').style.display = 
+        hiddenBooks.children.length > 0 ? 'inline-block' : 'none';
 }
 
-function updateBookList(books) {
-    const bookContainer = document.getElementById('book-container');
-    const fragment = document.createDocumentFragment();
-
-    books.forEach(book => fragment.appendChild(book));
-    
-    bookContainer.innerHTML = ''; 
-    bookContainer.appendChild(fragment);
-}
+// Форматирование года выхода
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.book-info p').forEach(p => {
+        if (p.textContent.includes("Год выхода:")) {
+            let yearMatch = p.textContent.match(/\d{4}/);
+            if (yearMatch) {
+                p.innerHTML = `<span class="bold-text">Год выхода:</span> ${yearMatch[0]}`;
+            }
+        }
+    });
+});

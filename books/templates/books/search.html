@@ -26,55 +26,72 @@
     </div>
     
     <div class="book-container" id="book-container">
-        {# Первые 10 книг отображаем сразу #}
-        {% for book in books|slice:":10" %}
-        <a style="text-decoration: none;" href="{% url 'book_detail' book.id %}">
-            <div class="book-card">
-                <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
-                <div class="book-info">
-                    <h3>{{ book.title }}</h3>
-                    <p><span class="bold-text">Автор(ы):</span> {{ book.authors }}</p>
-                    <p><span class="bold-text">Издатель:</span> {{ book.publisher }}</p>
-                    <p><span class="bold-text">Кол-во страниц:</span> {{ book.page_count }}</p>
-                    <p><span class="bold-text">Год выхода:</span> {{ book.published_date }}</p>
-                </div>
+        {% for book in books|slice:":20" %}
+        <a href="{% url 'book_detail' book.id %}" class="book-card">
+            <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+            <div class="book-info">
+                <h3>{{ book.title }}</h3>
+                <p><span class="bold-text">Автор(ы):</span> {{ book.authors }}</p>
+                <p><span class="bold-text">Издатель:</span> {{ book.publisher }}</p>
+                <p><span class="bold-text">Кол-во страниц:</span> {{ book.page_count }}</p>
+                <p><span class="bold-text">Год выхода:</span> {{ book.published_date }}</p>
             </div>
         </a>
         {% endfor %}
     </div>
     
-    {# Кнопка "Показать еще" #}
-    {% if total_books > 10 %}
-    <div class="load-more-container" style="text-align: center; margin: 20px 0;">
-        
-        <span id="books-count" style="color: white; margin-bottom: 10px;">
-            10/40
-        </span>
-        <button id="load-more" class="sort-button">Показать еще</button>
-        
+    {% if books|length > 20 %}
+    <div class="load-more-container">
+        <button id="show-all" class="sort-button">Показать все результаты</button>
     </div>
     {% endif %}
 
-    
-    {# Скрытые остальные книги #}
     <div id="hidden-books" style="display: none;">
-        {% for book in books|slice:"10:" %}
-        <a style="text-decoration: none;" href="{% url 'book_detail' book.id %}">
-            <div class="book-card">
-                <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
-                <div class="book-info">
-                    <h3>{{ book.title }}</h3>
-                    <p><span class="bold-text">Автор(ы):</span> {{ book.authors }}</p>
-                    <p><span class="bold-text">Издатель:</span> {{ book.publisher }}</p>
-                    <p><span class="bold-text">Кол-во страниц:</span> {{ book.page_count }}</p>
-                    <p><span class="bold-text">Год выхода:</span> {{ book.published_date }}</p>
-                </div>
+        {% for book in books|slice:"20:" %}
+        <a href="{% url 'book_detail' book.id %}" class="book-card">
+            <div class="book-image" style="background-image: url('{{ book.thumbnail }}');"></div>
+            <div class="book-info">
+                <h3>{{ book.title }}</h3>
+                <p><span class="bold-text">Автор(ы):</span> {{ book.authors }}</p>
+                <p><span class="bold-text">Издатель:</span> {{ book.publisher }}</p>
+                <p><span class="bold-text">Кол-во страниц:</span> {{ book.page_count }}</p>
+                <p><span class="bold-text">Год выхода:</span> {{ book.published_date }}</p>
             </div>
         </a>
         {% endfor %}
     </div>
 </div>
 
-<script src="{% static 'books/js/main.js' %}"></script>
 <script src="{% static 'books/js/search.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    updateBooksCounter();
+    
+    const showAllBtn = document.getElementById('show-all');
+    if (showAllBtn) {
+        showAllBtn.addEventListener('click', function() {
+            const hiddenBooks = document.getElementById('hidden-books');
+            const bookContainer = document.getElementById('book-container');
+            
+            Array.from(hiddenBooks.children).forEach(book => {
+                bookContainer.appendChild(book);
+            });
+            
+            updateBooksCounter();
+            showAllBtn.style.display = 'none';
+        });
+    }
+});
+
+function updateBooksCounter() {
+    const bookContainer = document.getElementById('book-container');
+    const hiddenBooks = document.getElementById('hidden-books');
+    const booksCount = document.getElementById('books-count');
+    
+    if (booksCount) {
+        const totalBooks = bookContainer.children.length + (hiddenBooks ? hiddenBooks.children.length : 0);
+        booksCount.textContent = `${bookContainer.children.length} из ${totalBooks}`;
+    }
+}
+</script>
 {% endblock %}
