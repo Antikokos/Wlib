@@ -9,7 +9,13 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    background: radial-gradient(circle at center, 
+                  #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    transition: background 0.5s ease-out;
 }
+
+
 
 /* Оверлей для модального окна */
 .modal-overlay {

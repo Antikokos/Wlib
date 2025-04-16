@@ -1,27 +1,24 @@
 // Градиент фон
 
 
-document.addEventListener('mousemove', (e) => {
-    const x = (e.clientX / window.innerWidth) * 100;
-    const y = (e.clientY / window.innerHeight) * 100;
+function moveGradient(e) {
+    const x = e.clientX / window.innerWidth * 100;
+    const y = e.clientY / window.innerHeight * 100;
+    
+    document.body.style.background = 
+        `radial-gradient(circle at ${x}% ${y}%, 
+         #ee7752, #e73c7e, #23a6d5, #23d5ab)`;
+}
 
-    document.body.style.background = `
-        radial-gradient(
-            circle at ${x}% ${y}%,
-            #ee7752, #e73c7e, #23a6d5, #23d5ab
-        )`;
-});
+// Устанавливаем обработчик движения мыши
+document.addEventListener('mousemove', moveGradient);
 
-
-
-document.body.style.background = `
-    radial-gradient(
-        circle at ${x}% ${y}%, 
-        #1a1a2e, #16213e, #0f3460
-    )`;
-document.body.style.backgroundSize = '400% 400%';
-
-
+// Инициализируем градиент в центре при загрузке
+window.onload = function() {
+    document.body.style.background = 
+        `radial-gradient(circle at 50% 50%, 
+         #ee7752, #e73c7e, #23a6d5, #23d5ab)`;
+};
 
 
 // Конфигурация
