@@ -186,12 +186,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (decreaseBtn) {
             decreaseBtn.addEventListener("click", function () {
-                ensureBookInCollection();
                 if (totalPages <= 0) return;
                 let currentValue = progressSlider ? parseInt(progressSlider.value, 10) : parseInt(currentPageEl.textContent, 10);
                 let newPages = Math.max(0, currentValue - 1);
                 if (progressSlider) progressSlider.value = newPages;
-                updateProgress(newPages, false);
+                updateProgressVisuals(newPages);
+                isProgressChanged = true;
                 animateUpdateButton();
                 console.log(`Decrease button clicked. New value (not saved): ${newPages}`);
             });
@@ -199,19 +199,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (increaseBtn) {
             increaseBtn.addEventListener("click", function () {
-                ensureBookInCollection();
                 if (totalPages <= 0) return;
                 let currentValue = progressSlider ? parseInt(progressSlider.value, 10) : parseInt(currentPageEl.textContent, 10);
                 let newPages = Math.min(totalPages, currentValue + 1);
                 if (progressSlider) progressSlider.value = newPages;
-                updateProgress(newPages, false);
+                updateProgressVisuals(newPages);
+                isProgressChanged = true;
                 animateUpdateButton();
                 console.log(`Increase button clicked. New value (not saved): ${newPages}`);
             });
         }
 
         if (pageInput) {
-            pageInput.addEventListener("input", animateUpdateButton);
+            pageInput.addEventListener("input", function() {
+                isProgressChanged = true;
+                animateUpdateButton();
+            });
             pageInput.addEventListener("keypress", function (e) {
                 if (e.key === "Enter") {
                     console.log("Enter pressed in page input.");
@@ -223,20 +226,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (updatePagesBtn) {
             updatePagesBtn.addEventListener("click", function () {
-                ensureBookInCollection().then(() => {
-                    if (!isProgressChanged) {
-                        showNotification("Нет изменений для сохранения", false);
-                        return;
-                    }
-                    const pages = parseInt(pageInput.value, 10);
-                    if (isNaN(pages)) {
-                        showNotification("Некорректное значение страниц", true);
-                        return;
-                    }
+                if (!isProgressChanged) {
+                    showNotification("Нет изменений для сохранения", false);
+                    return;
+                }
+
+                const pages = parseInt(pageInput.value, 10);
+                if (isNaN(pages)) {
+                    showNotification("Некорректное значение страниц", true);
+                    return;
+                }
+
+                // Проверяем, добавлена ли книга в коллекцию перед сохранением прогресса
+                if (!hasBookInCollection) {
+                    // Если нет, добавляем с дефолтным статусом "reading"
+                    updateBookStatus("reading").then(() => {
+                        updateProgress(pages, true);
+                        isProgressChanged = false;
+                        checkStatusAfterProgressUpdate(pages);
+                    });
+                } else {
                     updateProgress(pages, true);
                     isProgressChanged = false;
                     checkStatusAfterProgressUpdate(pages);
-                });
+                }
             });
         }
     }
@@ -273,14 +286,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function handleSliderInput() {
         const pages = parseInt(this.value, 10);
-        updateProgress(pages, false);
+        updateProgressVisuals(pages);
         updateSliderTooltip(pages);
+        isProgressChanged = true;
     }
 
     function handleSliderChange() {
         const pages = parseInt(this.value, 10);
         console.log(`Slider change committed. New value: ${pages}`);
-        updateProgress(pages, false);
+        updateProgressVisuals(pages);
         animateUpdateButton();
         if (isAuthenticated) {
             showNotification("Не забудьте сохранить изменения", false);
@@ -288,18 +302,55 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updatePagesFromInput() {
-        ensureBookInCollection();
         if (!pageInput || totalPages <= 0) return;
         let pages = parseInt(pageInput.value, 10);
         if (isNaN(pages)) pages = currentPageEl ? parseInt(currentPageEl.textContent, 10) || 0 : 0;
         pages = Math.max(0, Math.min(totalPages, pages));
         console.log(`Updating pages from input to: ${pages}`);
         if (progressSlider) progressSlider.value = pages;
-        updateProgress(pages, false);
+        updateProgressVisuals(pages);
+        isProgressChanged = true;
         if (updatePagesBtn) {
             updatePagesBtn.classList.add('pulse');
             setTimeout(() => { updatePagesBtn.classList.remove('pulse'); }, 800);
         }
+    }
+
+    function updateProgressVisuals(pagesRead) {
+        if (!progressFill || !progressText || !currentPageEl || totalPages <= 0) {
+            if (totalPages <= 0) console.warn("Cannot update progress: total pages is 0.");
+            else console.warn("Progress elements missing, cannot update progress display.");
+            return;
+        }
+
+        pagesRead = Math.max(0, Math.min(totalPages, pagesRead));
+        const percentage = (pagesRead / totalPages) * 100;
+        const roundedPercentage = Math.round(percentage * 10) / 10;
+
+        progressFill.style.width = percentage + "%";
+        progressText.textContent = roundedPercentage + "%";
+        currentPageEl.textContent = pagesRead;
+
+        if (pageInput && document.activeElement !== pageInput) {
+            pageInput.value = pagesRead;
+        }
+
+        updateSliderTooltip(pagesRead);
+        console.log(`Progress visuals updated: ${pagesRead}/${totalPages} pages (${roundedPercentage}%)`);
+    }
+
+    function updateProgress(pagesRead, saveToServer) {
+        updateProgressVisuals(pagesRead);
+        console.log(`Progress updated: ${pagesRead}/${totalPages} pages - SaveToServer: ${saveToServer}`);
+
+        if (saveToServer && isAuthenticated && bookId) {
+            saveProgressToServer(pagesRead);
+            showNotification("Данные успешно обновлены");
+        } else {
+            isProgressChanged = !saveToServer;
+        }
+
+        if (saveToServer && pagesRead > 0) createSparkles(progressFill);
     }
 
     function getCSRFToken() {
@@ -348,42 +399,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-function updateProgress(pagesRead, saveToServer) {
-    if (!progressFill || !progressText || !currentPageEl || totalPages <= 0) {
-        if (totalPages <= 0) console.warn("Cannot update progress: total pages is 0.");
-        else console.warn("Progress elements missing, cannot update progress display.");
-        return;
-    }
-
-    pagesRead = Math.max(0, Math.min(totalPages, pagesRead));
-    const percentage = (pagesRead / totalPages) * 100;
-    const roundedPercentage = Math.round(percentage * 10) / 10;
-
-    progressFill.style.width = percentage + "%";
-    progressText.textContent = roundedPercentage + "%";
-    currentPageEl.textContent = pagesRead;
-
-    if (pageInput && document.activeElement !== pageInput) {
-        pageInput.value = pagesRead;
-    }
-
-    updateSliderTooltip(pagesRead);
-    console.log(`Progress updated: ${pagesRead}/${totalPages} pages (${roundedPercentage}%) - SaveToServer: ${saveToServer}`);
-
-    if (saveToServer && isAuthenticated && bookId) {
-        if (!hasBookInCollection) {
-            updateBookStatus("reading");
-            hasBookInCollection = true;
-        }
-        saveProgressToServer(pagesRead);
-        showNotification("Данные успешно обновлены");
-    } else {
-        isProgressChanged = true;
-    }
-
-    if (saveToServer && pagesRead > 0) createSparkles(progressFill);
-}
-
     function updateSliderTooltip(pages) {
         if (!sliderTooltip || !progressSlider || totalPages <= 0) return;
         const thumbPositionPercent = (pages / totalPages) * 100;
@@ -415,6 +430,8 @@ function updateProgress(pagesRead, saveToServer) {
                         updateStatusButton(data.current_status);
                         updateBooksCountersInProfile();
                     }
+                    // После успешного сохранения прогресса, считаем книгу добавленной в коллекцию
+                    hasBookInCollection = true;
                 } else {
                     console.error("Error saving progress:", data.message);
                     showNotification(`Ошибка сохранения: ${data.message || 'Неизвестная ошибка'}`, true);
@@ -468,7 +485,7 @@ function updateProgress(pagesRead, saveToServer) {
         const progressToSend = status === 'read' ? totalPages : currentPages;
         const percentToSend = status === 'read' ? 100 : (totalPages > 0 ? (progressToSend / totalPages) * 100 : 0);
         console.log(`Updating status: status=${status}, bookId=${bookId}, progress=${progressToSend}, percent=${percentToSend}`);
-        fetch("/update_book_status/", {
+        return fetch("/update_book_status/", { // Return the promise to chain in the "save progress" logic
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -489,21 +506,24 @@ function updateProgress(pagesRead, saveToServer) {
                 currentBookStatus = status;
                 hasBookInCollection = true;
                 updateStatusButton(status);
-                updateBooksCountersInProfile(); // Добавлено для синхронизации
+                updateBooksCountersInProfile();
                 showNotification(`Статус книги обновлен на "${getStatusName(status)}"`);
                 if (status === 'read' && totalPages > 0) {
                     updateProgress(totalPages, false);
                     createSparkles(progressFill);
                 }
+                return data; // Return data for chaining
             } else {
                 const message = data.message || data.error || 'Неизвестная ошибка';
                 console.error("Error updating status:", message);
+                throw new Error(message); // Throw error to be caught in the chain
             }
         })
         .catch(error => {
             console.error("Network error updating status:", error);
             const message = error.message || (typeof error === 'string' ? error : 'Ошибка соединения');
             showNotification(`Ошибка обновления статуса: ${message}`, true);
+            throw error; // Re-throw the error to prevent further execution in the chain
         });
     }
 
@@ -525,18 +545,9 @@ function updateProgress(pagesRead, saveToServer) {
         statusMainText.textContent = text;
     }
 
+    // Removed the automatic "reading" status assignment
     function ensureBookInCollection() {
-        return new Promise((resolve) => {
-            if (!hasBookInCollection) {
-                console.log("Book not in collection. Adding to 'reading' status automatically.");
-                updateBookStatus("reading").then(() => {
-                    hasBookInCollection = true;
-                    resolve();
-                });
-            } else {
-                resolve();
-            }
-        });
+        return Promise.resolve(); // Now it just resolves, the addition logic is handled elsewhere
     }
 
     function formatBookDescription(element) {
