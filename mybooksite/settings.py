@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
+from decouple import config, Csv
 
 
 from django.conf.global_settings import STATICFILES_DIRS
@@ -25,20 +27,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-e&k))in6o&y6xqbh^waw^n!sn7yueci9eeh1p6*%!^w=_!8&52'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = [
-    'wlib-production.up.railway.app',  # Основной домен на Railway
-    '127.0.0.1',                       # Для локального тестирования
-    'localhost'                        # Для разработки
-]
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
 # Application definition
 
 INSTALLED_APPS = [
+    'axes',
     'mathfilters',
     'mybooksite',
     'books.apps.BooksConfig',
@@ -52,6 +51,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'axes.middleware.AxesMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -84,16 +84,15 @@ WSGI_APPLICATION = 'mybooksite.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+# https://docs.djangoproject.com/en/5.1/ref/settings/#databases\
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres.cijgthdmrtpnjcjzmpul',
-        'PASSWORD': 'qwe123!@#',  
-        'HOST': 'aws-0-eu-central-1.pooler.supabase.com',  
-        'PORT': '6543',  
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
     }
 }
 
@@ -164,6 +163,17 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'fferanyt@gmail.com'  # твой email 
-EMAIL_HOST_PASSWORD = 'pbrvlpzhnlolarov'  # сюда вставь пароль приложения
-DEFAULT_FROM_EMAIL = 'Wlib'  # или как хочешь
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Wlib')
+
+# это нужно для работы Axes
+AUTHENTICATION_BACKENDS = [ 
+    'axes.backends.AxesBackend',  # должен быть первым
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+AXES_FAILURE_LIMIT = 5  # после 3-х неудачных попыток
+AXES_COOLOFF_TIME = timedelta(minutes=5)  # 5 минут блокировки
+AXES_RESET_ON_FAILURE = False  # или True, в зависимости от желаемого поведения
+AXES_LOCKOUT_CALLABLE = 'books.utils.custom_lockout_response'  # можно реализовать кастомную логику (опционально)
