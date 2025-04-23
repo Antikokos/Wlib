@@ -12,16 +12,6 @@ document.addEventListener('mousemove', (e) => {
         )`;
 });
 
-
-
-document.body.style.background = `
-    radial-gradient(
-        circle at ${x}% ${y}%, 
-        #1a1a2e, #16213e, #0f3460
-    )`;
-document.body.style.backgroundSize = '400% 400%';
-
-
 // Конфигурация
 const CONFIG = {
     MIN_PASSWORD_LENGTH: 8,
